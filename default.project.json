@@ -1,0 +1,156 @@
+{
+  "name": "AngelCloud_TheCloudClimb",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$path": "ServerScriptService",
+
+      "Packages": {
+        "$className": "Folder",
+        "$path": "Packages/Server"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "$path": "StarterPlayerScripts"
+      }
+    },
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+
+      "Config": {
+        "$className": "Folder",
+        "$path": "ReplicatedStorage/Config"
+      },
+
+      "Shared": {
+        "$className": "Folder",
+        "$path": "ReplicatedStorage/Shared"
+      },
+
+      "Packages": {
+        "$className": "Folder",
+        "$path": "Packages"
+      }
+    },
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "StreamingEnabled": true
+      },
+
+      "Layer1_Nursery": {
+        "$className": "Folder"
+      },
+      "Layer2_Meadow": {
+        "$className": "Folder"
+      },
+      "Layer3_Canopy": {
+        "$className": "Folder"
+      },
+      "Layer4_Stormwall": {
+        "$className": "Folder"
+      },
+      "Layer5_Luminance": {
+        "$className": "Folder"
+      },
+      "Layer6_Empyrean": {
+        "$className": "Folder"
+      }
+    },
+
+    "StarterGui": {
+      "$className": "StarterGui",
+      "$properties": {
+        "ScreenCompatibilityMode": "TextSize"
+      }
+    },
+
+    "Lighting": {
+      "$className": "Lighting",
+      "$properties": {
+        "Technology": "Future",
+        "Ambient": [80, 75, 90],
+        "OutdoorAmbient": [180, 170, 200],
+        "Brightness": 2,
+        "ClockTime": 10,
+        "GeographicLatitude": 35,
+        "GlobalShadows": true,
+        "EnvironmentDiffuseScale": 1,
+        "EnvironmentSpecularScale": 1,
+        "FogEnd": 800,
+        "FogColor": [200, 190, 220]
+      },
+
+      "Atmosphere": {
+        "$className": "Atmosphere",
+        "$properties": {
+          "Density": 0.25,
+          "Offset": 0.3,
+          "Color": [210, 200, 235],
+          "Decay": [190, 180, 215],
+          "Glare": 0,
+          "Haze": 1.5
+        }
+      },
+
+      "Bloom": {
+        "$className": "BloomEffect",
+        "$properties": {
+          "Intensity": 0.6,
+          "Size": 30,
+          "Threshold": 0.85
+        }
+      },
+
+      "Sky": {
+        "$className": "Sky",
+        "$properties": {
+          "StarCount": 3000,
+          "CelestialBodiesShown": true
+        }
+      },
+
+      "ColorCorrection": {
+        "$className": "ColorCorrectionEffect",
+        "$properties": {
+          "Brightness": 0.05,
+          "Contrast": 0.1,
+          "Saturation": 0.15
+        }
+      },
+
+      "SunRays": {
+        "$className": "SunRaysEffect",
+        "$properties": {
+          "Intensity": 0.05,
+          "Spread": 0.6
+        }
+      }
+    },
+
+    "SoundService": {
+      "$className": "SoundService",
+      "$properties": {
+        "RespectFilteringEnabled": true
+      }
+    },
+
+    "ServerStorage": {
+      "$className": "ServerStorage",
+
+      "TestRunner": {
+        "$className": "Folder",
+        "$path": "tests"
+      }
+    }
+  }
+}
