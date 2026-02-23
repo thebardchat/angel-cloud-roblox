@@ -1,0 +1,36 @@
+# Selene — Luau linter configuration
+# Docs: https://kampfkarren.github.io/selene/
+
+std = "roblox"
+
+[config]
+# Warn on unused variables (except underscore-prefixed)
+unused_variable = "warn"
+
+[rules]
+# Core safety
+global_usage = "deny"
+if_same_then_else = "warn"
+empty_if = "warn"
+bad_string_escape = "deny"
+compare_nan = "deny"
+duplicate_keys = "deny"
+mismatched_arg_count = "warn"
+unbalanced_assignments = "warn"
+type_check_inside_call = "warn"
+
+# Style
+parenthese_conditions = "warn"
+multiple_statements = "allow"
+
+# Roblox-specific
+roblox_incorrect_color3_new_bounds = "deny"
+roblox_incorrect_roact_usage = "warn"
+roblox_suspicious_udim2_new = "warn"
+
+# Performance
+manual_table_clone = "warn"
+constant_table_len = "warn"
+
+# Deprecated API usage
+deprecated = "deny"

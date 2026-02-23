@@ -5,7 +5,12 @@
 
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "$path": "ServerScriptService"
+      "$path": "ServerScriptService",
+
+      "Packages": {
+        "$className": "Folder",
+        "$path": "Packages/Server"
+      }
     },
 
     "StarterPlayer": {
@@ -23,6 +28,16 @@
       "Config": {
         "$className": "Folder",
         "$path": "ReplicatedStorage/Config"
+      },
+
+      "Shared": {
+        "$className": "Folder",
+        "$path": "ReplicatedStorage/Shared"
+      },
+
+      "Packages": {
+        "$className": "Folder",
+        "$path": "Packages"
       }
     },
 
@@ -37,6 +52,25 @@
       },
       "Layer2_Meadow": {
         "$className": "Folder"
+      },
+      "Layer3_Canopy": {
+        "$className": "Folder"
+      },
+      "Layer4_Stormwall": {
+        "$className": "Folder"
+      },
+      "Layer5_Luminance": {
+        "$className": "Folder"
+      },
+      "Layer6_Empyrean": {
+        "$className": "Folder"
+      }
+    },
+
+    "StarterGui": {
+      "$className": "StarterGui",
+      "$properties": {
+        "ScreenCompatibilityMode": "TextSize"
       }
     },
 
@@ -92,6 +126,14 @@
           "Contrast": 0.1,
           "Saturation": 0.15
         }
+      },
+
+      "SunRays": {
+        "$className": "SunRaysEffect",
+        "$properties": {
+          "Intensity": 0.05,
+          "Spread": 0.6
+        }
       }
     },
 
@@ -99,6 +141,15 @@
       "$className": "SoundService",
       "$properties": {
         "RespectFilteringEnabled": true
+      }
+    },
+
+    "ServerStorage": {
+      "$className": "ServerStorage",
+
+      "TestRunner": {
+        "$className": "Folder",
+        "$path": "tests"
       }
     }
   }

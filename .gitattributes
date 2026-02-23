@@ -1,0 +1,30 @@
+# Auto detect text files and normalize line endings
+* text=auto
+
+# Luau source files
+*.lua text eol=lf
+*.luau text eol=lf
+
+# Config files
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+
+# Shell scripts
+*.sh text eol=lf
+
+# Windows scripts
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files
+*.rbxlx binary
+*.rbxl binary
+*.rbxm binary
+*.rbxmx binary
+*.png binary
+*.jpg binary
+*.gif binary
