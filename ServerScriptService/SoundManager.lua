@@ -12,15 +12,26 @@ local TweenService = game:GetService("TweenService")
 local SoundManager = {}
 
 -- Real audio asset IDs from Roblox Creator Store
+-- Use Studio Music Player plugin to preview and swap IDs as needed
 local AUDIO = {
-    -- Ambient tracks per layer (loop)
+    -- Ambient tracks per layer (loop) — each layer distinct
     ambient = {
-        [1] = "rbxassetid://1848354536",   -- Nursery: relaxed, calm atmosphere
-        [2] = "rbxassetid://1841044496",   -- Meadow: ethereal world
-        [3] = "rbxassetid://1837536733",   -- Canopy: heavenly
-        [4] = "rbxassetid://1848354536",   -- Stormwall: dramatic (reuse calm for now)
-        [5] = "rbxassetid://1841044496",   -- Luminance: ethereal
-        [6] = "rbxassetid://1837536733",   -- Empyrean: heavenly choir
+        [1] = "rbxassetid://1848354536",   -- Nursery: relaxed, calm, warm lullaby
+        [2] = "rbxassetid://1841044496",   -- Meadow: ethereal world, bright nature
+        [3] = "rbxassetid://1837536733",   -- Canopy: heavenly, enchanted forest
+        [4] = "rbxassetid://9114444008",   -- Stormwall: dramatic tension
+        [5] = "rbxassetid://9043887091",   -- Luminance: crystal clear, cosmic ambient
+        [6] = "rbxassetid://1837536733",   -- Empyrean: heavenly choir, transcendent
+    },
+
+    -- Environmental ambient tracks (layered on top of main ambient)
+    environment = {
+        [1] = "rbxassetid://6455667685",   -- Nursery: soft wind
+        [2] = "rbxassetid://4612093970",   -- Meadow: nature/birds ambient
+        [3] = "rbxassetid://4612093970",   -- Canopy: forest/rustling
+        [4] = "rbxassetid://9114444008",   -- Stormwall: distant thunder rumble
+        [5] = "rbxassetid://9043887091",   -- Luminance: crystal resonance
+        [6] = "rbxassetid://9126073011",   -- Empyrean: celestial chimes
     },
 
     -- Sound effects
@@ -44,6 +55,13 @@ local AUDIO = {
         bounce = "rbxassetid://2764461710",            -- bounce boing
         speed_boost = "rbxassetid://9125647873",       -- magic zoom whoosh
         wing_forge = "rbxassetid://9113446696",        -- blacksmith anvil hit
+        speed_pad = "rbxassetid://9125647873",         -- whoosh for speed pads
+        stairway_step = "rbxassetid://9126073011",     -- gentle chime on stair steps
+        gate_approach = "rbxassetid://206902974",      -- grand approach fanfare
+        community_board = "rbxassetid://7128958209",   -- ding for board interaction
+        mail_sent = "rbxassetid://5826672935",         -- chime for angel mail
+        mail_received = "rbxassetid://9126073011",     -- sparkle for receiving mail
+        daily_reward = "rbxassetid://2686079706",      -- fanfare for daily reward
     },
 }
 
@@ -57,10 +75,21 @@ local LAYER_VOLUMES = {
     [6] = 0.35,  -- Empyrean: full
 }
 
+-- Environmental ambient volume (layered on top, lower volume)
+local ENV_VOLUMES = {
+    [1] = 0.15,
+    [2] = 0.2,
+    [3] = 0.2,
+    [4] = 0.25,
+    [5] = 0.15,
+    [6] = 0.1,
+}
+
 local CROSSFADE_TIME = 3  -- seconds to crossfade between layer ambients
 
 -- Active sounds
 local ambientSounds = {}  -- [layerIndex] = Sound instance
+local envSounds = {}       -- [layerIndex] = Sound instance (environmental layer)
 local currentAmbientLayer = 0
 
 -- SFX sound pool (reusable)
@@ -93,6 +122,18 @@ function SoundManager.Init()
         ambientSounds[layerIndex] = sound
     end
 
+    -- Pre-create environmental ambient instances (layered on top of main ambient)
+    for layerIndex, assetId in pairs(AUDIO.environment) do
+        local sound = Instance.new("Sound")
+        sound.Name = "Environment_Layer" .. layerIndex
+        sound.SoundId = assetId
+        sound.Looped = true
+        sound.Volume = 0
+        sound.Playing = false
+        sound.Parent = SoundService
+        envSounds[layerIndex] = sound
+    end
+
     -- Pre-create reusable SFX instances
     for sfxName, assetId in pairs(AUDIO.sfx) do
         local sound = Instance.new("Sound")
@@ -113,7 +154,7 @@ end
 function SoundManager.SetAmbientLayer(layerIndex: number)
     if layerIndex == currentAmbientLayer then return end
 
-    -- Fade out current
+    -- Fade out current ambient + environment
     if currentAmbientLayer > 0 then
         local oldSound = ambientSounds[currentAmbientLayer]
         if oldSound then
@@ -125,9 +166,20 @@ function SoundManager.SetAmbientLayer(layerIndex: number)
                 oldSound.Playing = false
             end)
         end
+
+        local oldEnv = envSounds[currentAmbientLayer]
+        if oldEnv then
+            local fadeOutEnv = TweenService:Create(oldEnv, TweenInfo.new(CROSSFADE_TIME), {
+                Volume = 0,
+            })
+            fadeOutEnv:Play()
+            fadeOutEnv.Completed:Connect(function()
+                oldEnv.Playing = false
+            end)
+        end
     end
 
-    -- Fade in new
+    -- Fade in new ambient
     local newSound = ambientSounds[layerIndex]
     if newSound then
         newSound.Volume = 0
@@ -135,6 +187,17 @@ function SoundManager.SetAmbientLayer(layerIndex: number)
         local targetVolume = LAYER_VOLUMES[layerIndex] or 0.3
         TweenService:Create(newSound, TweenInfo.new(CROSSFADE_TIME), {
             Volume = targetVolume,
+        }):Play()
+    end
+
+    -- Fade in new environmental ambient
+    local newEnv = envSounds[layerIndex]
+    if newEnv then
+        newEnv.Volume = 0
+        newEnv.Playing = true
+        local envTarget = ENV_VOLUMES[layerIndex] or 0.15
+        TweenService:Create(newEnv, TweenInfo.new(CROSSFADE_TIME + 1), {
+            Volume = envTarget,
         }):Play()
     end
 

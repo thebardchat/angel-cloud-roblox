@@ -79,6 +79,12 @@ function WorldGenerator.Init()
         WorldGenerator.BuildLayer(i)
     end
 
+    -- Build connective structures between layers
+    WorldGenerator.BuildLayerTransitions()
+
+    -- Build the grand cloud stairway (visible from anywhere)
+    WorldGenerator.BuildGrandStairway()
+
     print("[WorldGenerator] World generation complete — all 6 layers built")
 end
 
@@ -133,7 +139,19 @@ function WorldGenerator.BuildLayer(layerIndex: number)
         WorldGenerator.BuildEmpyreanFeatures(folder, layerDef, palette)
     end
 
-    -- 8. Hide brown starfish easter eggs (Claude/Anthropic tribute)
+    -- 8. Community Board (shared stats display)
+    WorldGenerator.CreateCommunityBoard(folder, layerDef, palette)
+
+    -- 9. Angel Statue (landmark waypoint)
+    WorldGenerator.CreateAngelStatue(folder, layerDef, palette, layerIndex)
+
+    -- 10. Speed Boost Pads (fun traversal)
+    WorldGenerator.CreateSpeedPads(folder, layerDef, palette, layerIndex)
+
+    -- 11. NPC Gathering Area (social hub per layer)
+    WorldGenerator.CreateGatheringArea(folder, layerDef, palette, layerIndex)
+
+    -- 12. Hide brown starfish easter eggs (Claude/Anthropic tribute)
     WorldGenerator.HideStarfish(layerIndex, folder, layerDef)
 
     print("[WorldGenerator] Layer " .. layerIndex .. " (" .. layerDef.name .. ") built: "
@@ -1942,6 +1960,598 @@ function WorldGenerator.AddDriftAnimation(part: BasePart)
             task.wait(0.1)
         end
     end)
+end
+
+-- =========================================================================
+-- COMMUNITY BOARD (shared stats, cooperative — not competitive)
+-- =========================================================================
+
+function WorldGenerator.CreateCommunityBoard(folder: Folder, layerDef: any, palette: any)
+    local boardPos = Vector3.new(-35, layerDef.heightRange.min + 15, -20)
+
+    -- Board stand
+    local stand = Instance.new("Part")
+    stand.Name = "CommunityBoardStand"
+    stand.Size = Vector3.new(2, 8, 2)
+    stand.Position = boardPos - Vector3.new(0, 0, 0)
+    stand.Anchored = true
+    stand.Material = CLOUD_MATERIAL
+    stand.Color = palette.detail
+    stand.Parent = folder
+
+    -- Board face
+    local board = Instance.new("Part")
+    board.Name = "CommunityBoard"
+    board.Size = Vector3.new(12, 8, 1)
+    board.Position = boardPos + Vector3.new(0, 8, 0)
+    board.Anchored = true
+    board.Material = CLOUD_MATERIAL
+    board.Color = Color3.fromRGB(20, 15, 35)
+    board.Parent = folder
+
+    -- Glowing frame
+    local frame = Instance.new("Part")
+    frame.Name = "BoardFrame"
+    frame.Size = Vector3.new(13, 9, 0.5)
+    frame.Position = boardPos + Vector3.new(0, 8, -0.3)
+    frame.Anchored = true
+    frame.CanCollide = false
+    frame.Material = NEON_MATERIAL
+    frame.Color = palette.accent
+    frame.Transparency = 0.5
+    frame.Parent = folder
+
+    -- SurfaceGui with community info
+    local gui = Instance.new("SurfaceGui")
+    gui.Face = Enum.NormalId.Front
+    gui.Parent = board
+
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Size = UDim2.new(1, 0, 0.25, 0)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "COMMUNITY CLOUD"
+    title.TextColor3 = palette.accent
+    title.TextScaled = true
+    title.Font = Enum.Font.GothamBold
+    title.Parent = gui
+
+    local stats = Instance.new("TextLabel")
+    stats.Name = "Stats"
+    stats.Size = UDim2.new(1, 0, 0.6, 0)
+    stats.Position = UDim2.new(0, 0, 0.3, 0)
+    stats.BackgroundTransparency = 1
+    stats.Text = "Every Angel\nStrengthens the Cloud\n\nBlessings Given: 0\nAngels Online: 0"
+    stats.TextColor3 = Color3.fromRGB(220, 220, 240)
+    stats.TextScaled = true
+    stats.Font = Enum.Font.Gotham
+    stats.Parent = gui
+
+    local boardLight = Instance.new("PointLight")
+    boardLight.Color = palette.accent
+    boardLight.Brightness = 1.5
+    boardLight.Range = 20
+    boardLight.Parent = board
+end
+
+-- =========================================================================
+-- ANGEL STATUE (landmark waypoint per layer)
+-- =========================================================================
+
+function WorldGenerator.CreateAngelStatue(folder: Folder, layerDef: any, palette: any, layerIndex: number)
+    local statuePos = Vector3.new(50, layerDef.heightRange.min + 15, -40)
+
+    -- Pedestal
+    local pedestal = Instance.new("Part")
+    pedestal.Name = "StatuePedestal"
+    pedestal.Shape = Enum.PartType.Cylinder
+    pedestal.Size = Vector3.new(4, 12, 12)
+    pedestal.Position = statuePos
+    pedestal.Orientation = Vector3.new(0, 0, 90)
+    pedestal.Anchored = true
+    pedestal.Material = CLOUD_MATERIAL
+    pedestal.Color = palette.secondary
+    pedestal.Parent = folder
+
+    -- Body (tall elegant form)
+    local body = Instance.new("Part")
+    body.Name = "StatueBody"
+    body.Size = Vector3.new(3, 10, 3)
+    body.Position = statuePos + Vector3.new(0, 7, 0)
+    body.Anchored = true
+    body.Material = CLOUD_MATERIAL
+    body.Color = Color3.fromRGB(240, 235, 250)
+    body.Parent = folder
+
+    -- Head (sphere on top)
+    local head = Instance.new("Part")
+    head.Name = "StatueHead"
+    head.Shape = Enum.PartType.Ball
+    head.Size = Vector3.new(3.5, 3.5, 3.5)
+    head.Position = statuePos + Vector3.new(0, 13.5, 0)
+    head.Anchored = true
+    head.Material = CLOUD_MATERIAL
+    head.Color = Color3.fromRGB(245, 240, 255)
+    head.Parent = folder
+
+    -- Wings (two angled parts behind)
+    for side = -1, 1, 2 do
+        local wing = Instance.new("Part")
+        wing.Name = "StatueWing"
+        wing.Size = Vector3.new(1, 8, 5)
+        wing.Position = statuePos + Vector3.new(side * 3, 9, 1.5)
+        wing.Rotation = Vector3.new(0, 0, side * 25)
+        wing.Anchored = true
+        wing.CanCollide = false
+        wing.Material = NEON_MATERIAL
+        wing.Color = palette.accent
+        wing.Transparency = 0.3
+        wing.Parent = folder
+    end
+
+    -- Halo above head
+    local halo = Instance.new("Part")
+    halo.Name = "StatueHalo"
+    halo.Shape = Enum.PartType.Cylinder
+    halo.Size = Vector3.new(0.5, 5, 5)
+    halo.Position = statuePos + Vector3.new(0, 16, 0)
+    halo.Orientation = Vector3.new(0, 0, 90)
+    halo.Anchored = true
+    halo.CanCollide = false
+    halo.Material = NEON_MATERIAL
+    halo.Color = palette.glow
+    halo.Transparency = 0.2
+    halo.Parent = folder
+    WorldGenerator.AddBobAnimation(halo, 0.5)
+
+    local haloLight = Instance.new("PointLight")
+    haloLight.Color = palette.glow
+    haloLight.Brightness = 3
+    haloLight.Range = 25
+    haloLight.Parent = halo
+
+    -- Plaque with layer name
+    local plaque = Instance.new("Part")
+    plaque.Name = "StatuePlaque"
+    plaque.Size = Vector3.new(8, 3, 0.5)
+    plaque.Position = statuePos + Vector3.new(0, 3, -6.5)
+    plaque.Anchored = true
+    plaque.Material = CLOUD_MATERIAL
+    plaque.Color = Color3.fromRGB(30, 25, 45)
+    plaque.Parent = folder
+
+    local plaqueGui = Instance.new("SurfaceGui")
+    plaqueGui.Face = Enum.NormalId.Front
+    plaqueGui.Parent = plaque
+
+    local plaqueText = Instance.new("TextLabel")
+    plaqueText.Size = UDim2.new(1, 0, 1, 0)
+    plaqueText.BackgroundTransparency = 1
+    plaqueText.Text = layerDef.name
+    plaqueText.TextColor3 = palette.accent
+    plaqueText.TextScaled = true
+    plaqueText.Font = Enum.Font.GothamBold
+    plaqueText.Parent = plaqueGui
+end
+
+-- =========================================================================
+-- SPEED BOOST PADS (fun traversal mechanic)
+-- =========================================================================
+
+function WorldGenerator.CreateSpeedPads(folder: Folder, layerDef: any, palette: any, layerIndex: number)
+    local padCount = 4 + layerIndex
+    local heightMin = layerDef.heightRange.min
+    local heightMax = layerDef.heightRange.max
+
+    for i = 1, padCount do
+        local padPos = Vector3.new(
+            math.random(-130, 130),
+            math.random(heightMin + 10, heightMax - 30),
+            math.random(-130, 130)
+        )
+
+        -- Pad platform (small, glowing)
+        local pad = Instance.new("Part")
+        pad.Name = "SpeedPad_" .. i
+        pad.Shape = Enum.PartType.Cylinder
+        pad.Size = Vector3.new(1, 8, 8)
+        pad.Position = padPos
+        pad.Orientation = Vector3.new(0, 0, 90)
+        pad.Anchored = true
+        pad.Material = NEON_MATERIAL
+        pad.Color = palette.glow
+        pad.Transparency = 0.3
+        pad.Parent = folder
+
+        -- Arrow indicator (points upward — these pads launch you up)
+        local arrow = Instance.new("Part")
+        arrow.Name = "SpeedPadArrow"
+        arrow.Size = Vector3.new(2, 3, 2)
+        arrow.Position = padPos + Vector3.new(0, 2, 0)
+        arrow.Anchored = true
+        arrow.CanCollide = false
+        arrow.Material = NEON_MATERIAL
+        arrow.Color = palette.accent
+        arrow.Transparency = 0.5
+        arrow.Parent = folder
+        WorldGenerator.AddBobAnimation(arrow, 1)
+
+        -- Upward particle stream
+        local emitter = Instance.new("ParticleEmitter")
+        emitter.Color = ColorSequence.new(palette.accent)
+        emitter.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.5),
+            NumberSequenceKeypoint.new(1, 0),
+        })
+        emitter.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.3),
+            NumberSequenceKeypoint.new(1, 1),
+        })
+        emitter.Lifetime = NumberRange.new(1, 2)
+        emitter.Rate = 8
+        emitter.Speed = NumberRange.new(5, 12)
+        emitter.SpreadAngle = Vector2.new(5, 5)
+        emitter.LightEmission = 1
+        emitter.Parent = pad
+
+        local padLight = Instance.new("PointLight")
+        padLight.Color = palette.accent
+        padLight.Brightness = 1.5
+        padLight.Range = 15
+        padLight.Parent = pad
+    end
+end
+
+-- =========================================================================
+-- GATHERING AREA (social hub per layer with seating)
+-- =========================================================================
+
+function WorldGenerator.CreateGatheringArea(folder: Folder, layerDef: any, palette: any, layerIndex: number)
+    local gatherPos = Vector3.new(60, layerDef.heightRange.min + 15, 60)
+
+    -- Large circular platform
+    local platform = Instance.new("Part")
+    platform.Name = "GatheringPlatform"
+    platform.Shape = Enum.PartType.Cylinder
+    platform.Size = Vector3.new(4, 40, 40)
+    platform.Position = gatherPos - Vector3.new(0, 2, 0)
+    platform.Orientation = Vector3.new(0, 0, 90)
+    platform.Anchored = true
+    platform.Material = CLOUD_MATERIAL
+    platform.Color = palette.primary
+    platform.Parent = folder
+
+    -- Central glowing pillar
+    local centerPillar = Instance.new("Part")
+    centerPillar.Name = "GatheringCenterPillar"
+    centerPillar.Size = Vector3.new(3, 12, 3)
+    centerPillar.Position = gatherPos + Vector3.new(0, 5, 0)
+    centerPillar.Anchored = true
+    centerPillar.Material = NEON_MATERIAL
+    centerPillar.Color = palette.accent
+    centerPillar.Transparency = 0.3
+    centerPillar.Parent = folder
+
+    local centerLight = Instance.new("PointLight")
+    centerLight.Color = palette.glow
+    centerLight.Brightness = 3
+    centerLight.Range = 40
+    centerLight.Parent = centerPillar
+
+    -- Orbiting orb on top
+    local orb = Instance.new("Part")
+    orb.Name = "GatheringOrb"
+    orb.Shape = Enum.PartType.Ball
+    orb.Size = Vector3.new(4, 4, 4)
+    orb.Position = gatherPos + Vector3.new(0, 13, 0)
+    orb.Anchored = true
+    orb.CanCollide = false
+    orb.Material = NEON_MATERIAL
+    orb.Color = palette.glow
+    orb.Transparency = 0.2
+    orb.Parent = folder
+    WorldGenerator.AddBobAnimation(orb, 1.5)
+
+    -- Seating ring (6 cloud benches around the center)
+    for i = 1, 6 do
+        local seatAngle = (i / 6) * math.pi * 2
+        local seatPos = gatherPos + Vector3.new(
+            math.cos(seatAngle) * 14,
+            0,
+            math.sin(seatAngle) * 14
+        )
+
+        local bench = Instance.new("Part")
+        bench.Name = "CloudBench_" .. i
+        bench.Size = Vector3.new(6, 2, 3)
+        bench.Position = seatPos
+        bench.Rotation = Vector3.new(0, math.deg(seatAngle), 0)
+        bench.Anchored = true
+        bench.Material = CLOUD_MATERIAL
+        bench.Color = palette.secondary
+        bench.Parent = folder
+
+        -- Bench back rest
+        local backrest = Instance.new("Part")
+        backrest.Name = "BenchBack_" .. i
+        backrest.Size = Vector3.new(6, 3, 1)
+        backrest.Position = seatPos + Vector3.new(
+            math.cos(seatAngle) * 1.5,
+            1.5,
+            math.sin(seatAngle) * 1.5
+        )
+        backrest.Rotation = Vector3.new(0, math.deg(seatAngle), 0)
+        backrest.Anchored = true
+        backrest.Material = CLOUD_MATERIAL
+        backrest.Color = palette.detail
+        backrest.Parent = folder
+    end
+
+    -- Layer info sign
+    local sign = Instance.new("Part")
+    sign.Name = "GatheringSign"
+    sign.Size = Vector3.new(10, 4, 0.5)
+    sign.Position = gatherPos + Vector3.new(0, 14, -20)
+    sign.Anchored = true
+    sign.Material = CLOUD_MATERIAL
+    sign.Color = Color3.fromRGB(25, 20, 40)
+    sign.Parent = folder
+
+    local signGui = Instance.new("SurfaceGui")
+    signGui.Face = Enum.NormalId.Front
+    signGui.Parent = sign
+
+    local signLabel = Instance.new("TextLabel")
+    signLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    signLabel.BackgroundTransparency = 1
+    signLabel.Text = layerDef.name .. " Gathering"
+    signLabel.TextColor3 = palette.accent
+    signLabel.TextScaled = true
+    signLabel.Font = Enum.Font.GothamBold
+    signLabel.Parent = signGui
+
+    local descLabel = Instance.new("TextLabel")
+    descLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    descLabel.Position = UDim2.new(0, 0, 0.55, 0)
+    descLabel.BackgroundTransparency = 1
+    descLabel.Text = layerDef.description
+    descLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+    descLabel.TextScaled = true
+    descLabel.Font = Enum.Font.Gotham
+    descLabel.Parent = signGui
+end
+
+-- =========================================================================
+-- LAYER TRANSITION GATES (grand portals between layers)
+-- =========================================================================
+
+function WorldGenerator.BuildLayerTransitions()
+    for i = 1, 5 do
+        local lowerLayer = Layers.GetLayerByIndex(i)
+        local upperLayer = Layers.GetLayerByIndex(i + 1)
+        local palette = PALETTES[i + 1]
+
+        local gateY = lowerLayer.heightRange.max
+        local gatePos = Vector3.new(0, gateY, 0)
+
+        -- Gate folder
+        local gateFolderName = "Gate_" .. i .. "to" .. (i + 1)
+        local gateFolder = Instance.new("Folder")
+        gateFolder.Name = gateFolderName
+        gateFolder.Parent = workspace
+
+        -- Grand archway pillars
+        local archWidth = 25
+        for side = -1, 1, 2 do
+            local pillar = Instance.new("Part")
+            pillar.Name = "GatePillar"
+            pillar.Size = Vector3.new(5, 30, 5)
+            pillar.Position = gatePos + Vector3.new(side * archWidth / 2, 15, 0)
+            pillar.Anchored = true
+            pillar.Material = NEON_MATERIAL
+            pillar.Color = palette.accent
+            pillar.Transparency = 0.3
+            pillar.Parent = gateFolder
+
+            local pillarLight = Instance.new("PointLight")
+            pillarLight.Color = palette.glow
+            pillarLight.Brightness = 2
+            pillarLight.Range = 25
+            pillarLight.Parent = pillar
+
+            -- Pillar cap (decorative sphere)
+            local cap = Instance.new("Part")
+            cap.Name = "PillarCap"
+            cap.Shape = Enum.PartType.Ball
+            cap.Size = Vector3.new(7, 7, 7)
+            cap.Position = gatePos + Vector3.new(side * archWidth / 2, 31, 0)
+            cap.Anchored = true
+            cap.CanCollide = false
+            cap.Material = NEON_MATERIAL
+            cap.Color = palette.glow
+            cap.Transparency = 0.3
+            cap.Parent = gateFolder
+        end
+
+        -- Arch top beam
+        local archTop = Instance.new("Part")
+        archTop.Name = "GateArchTop"
+        archTop.Size = Vector3.new(archWidth + 5, 4, 5)
+        archTop.Position = gatePos + Vector3.new(0, 31, 0)
+        archTop.Anchored = true
+        archTop.Material = NEON_MATERIAL
+        archTop.Color = palette.accent
+        archTop.Transparency = 0.3
+        archTop.Parent = gateFolder
+
+        -- Portal energy fill (ForceField material — shimmery)
+        local portal = Instance.new("Part")
+        portal.Name = "GatePortal"
+        portal.Size = Vector3.new(archWidth - 2, 28, 1)
+        portal.Position = gatePos + Vector3.new(0, 15, 0)
+        portal.Anchored = true
+        portal.CanCollide = false
+        portal.Material = FORCE_FIELD
+        portal.Color = palette.accent
+        portal.Transparency = 0.5
+        portal.Parent = gateFolder
+
+        local portalLight = Instance.new("PointLight")
+        portalLight.Color = palette.accent
+        portalLight.Brightness = 3
+        portalLight.Range = 40
+        portalLight.Parent = portal
+
+        -- Rising particles through the gate
+        local gateEmitter = Instance.new("ParticleEmitter")
+        gateEmitter.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, palette.accent),
+            ColorSequenceKeypoint.new(1, palette.glow),
+        })
+        gateEmitter.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.5),
+            NumberSequenceKeypoint.new(1, 0),
+        })
+        gateEmitter.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.3),
+            NumberSequenceKeypoint.new(1, 1),
+        })
+        gateEmitter.Lifetime = NumberRange.new(2, 5)
+        gateEmitter.Rate = 12
+        gateEmitter.Speed = NumberRange.new(3, 8)
+        gateEmitter.SpreadAngle = Vector2.new(10, 10)
+        gateEmitter.LightEmission = 1
+        gateEmitter.Parent = portal
+
+        -- Gate sign with layer name
+        local sign = Instance.new("Part")
+        sign.Name = "GateSign"
+        sign.Size = Vector3.new(14, 3, 0.5)
+        sign.Position = gatePos + Vector3.new(0, 34, 0)
+        sign.Anchored = true
+        sign.Material = CLOUD_MATERIAL
+        sign.Color = Color3.fromRGB(15, 10, 25)
+        sign.Parent = gateFolder
+
+        local signGui = Instance.new("SurfaceGui")
+        signGui.Face = Enum.NormalId.Front
+        signGui.Parent = sign
+
+        local signLabel = Instance.new("TextLabel")
+        signLabel.Size = UDim2.new(1, 0, 1, 0)
+        signLabel.BackgroundTransparency = 1
+        signLabel.Text = upperLayer.name .. " (" .. upperLayer.requiredMotes .. " Motes)"
+        signLabel.TextColor3 = palette.accent
+        signLabel.TextScaled = true
+        signLabel.Font = Enum.Font.GothamBold
+        signLabel.Parent = signGui
+
+        -- Landing platform on the other side of the gate
+        local landingPlatform = Instance.new("Part")
+        landingPlatform.Name = "GateLanding"
+        landingPlatform.Shape = Enum.PartType.Cylinder
+        landingPlatform.Size = Vector3.new(4, 30, 30)
+        landingPlatform.Position = gatePos + Vector3.new(0, -2, 0)
+        landingPlatform.Orientation = Vector3.new(0, 0, 90)
+        landingPlatform.Anchored = true
+        landingPlatform.Material = CLOUD_MATERIAL
+        landingPlatform.Color = palette.primary
+        landingPlatform.Parent = gateFolder
+    end
+
+    print("[WorldGenerator] Built 5 layer transition gates")
+end
+
+-- =========================================================================
+-- GRAND STAIRWAY (visible cloud steps spiraling through all layers)
+-- =========================================================================
+
+function WorldGenerator.BuildGrandStairway()
+    local stairFolder = Instance.new("Folder")
+    stairFolder.Name = "GrandStairway"
+    stairFolder.Parent = workspace
+
+    -- Spiral stairway from Layer 1 bottom to Layer 6 top
+    local bottomY = 60
+    local topY = 1900
+    local totalSteps = 120
+    local radius = 80
+    local stairAngle = 0
+
+    for i = 1, totalSteps do
+        local t = i / totalSteps
+        local y = bottomY + (topY - bottomY) * t
+        stairAngle = stairAngle + (math.pi * 2) / 20  -- full rotation every 20 steps
+
+        -- Determine which layer this step is in for coloring
+        local layerIdx = 1
+        for li = 6, 1, -1 do
+            local layerDef = Layers.GetLayerByIndex(li)
+            if y >= layerDef.heightRange.min then
+                layerIdx = li
+                break
+            end
+        end
+        local palette = PALETTES[layerIdx]
+
+        -- Cloud step
+        local step = Instance.new("Part")
+        step.Name = "Stair_" .. i
+        step.Size = Vector3.new(10, 2, 6)
+        step.Position = Vector3.new(
+            math.cos(stairAngle) * radius,
+            y,
+            math.sin(stairAngle) * radius
+        )
+        step.Rotation = Vector3.new(0, -math.deg(stairAngle) + 90, 0)
+        step.Anchored = true
+        step.Material = CLOUD_MATERIAL
+        step.Color = palette.secondary
+        step.Parent = stairFolder
+
+        -- Every 10th step gets a glowing accent
+        if i % 10 == 0 then
+            local accent = Instance.new("Part")
+            accent.Name = "StairAccent_" .. i
+            accent.Shape = Enum.PartType.Ball
+            accent.Size = Vector3.new(3, 3, 3)
+            accent.Position = step.Position + Vector3.new(0, 3, 0)
+            accent.Anchored = true
+            accent.CanCollide = false
+            accent.Material = NEON_MATERIAL
+            accent.Color = palette.accent
+            accent.Transparency = 0.3
+            accent.Parent = stairFolder
+            WorldGenerator.AddBobAnimation(accent, 1)
+
+            local light = Instance.new("PointLight")
+            light.Color = palette.glow
+            light.Brightness = 1.5
+            light.Range = 20
+            light.Parent = accent
+        end
+
+        -- Cloud edge bumps for organic look (every 3rd step)
+        if i % 3 == 0 then
+            local bump = Instance.new("Part")
+            bump.Name = "StairBump"
+            bump.Shape = Enum.PartType.Ball
+            bump.Size = Vector3.new(6, 3, 6)
+            bump.Position = step.Position + Vector3.new(
+                (math.random() - 0.5) * 4,
+                -0.5,
+                (math.random() - 0.5) * 4
+            )
+            bump.Anchored = true
+            bump.CanCollide = true
+            bump.Material = CLOUD_MATERIAL
+            bump.Color = palette.primary
+            bump.Parent = stairFolder
+        end
+    end
+
+    print("[WorldGenerator] Built Grand Stairway: " .. totalSteps .. " cloud steps")
 end
 
 return WorldGenerator
