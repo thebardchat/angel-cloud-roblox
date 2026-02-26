@@ -1,161 +1,272 @@
-# Angel Cloud: The Cloud Climb — Roblox Game
+# 🌤️ Angel Cloud ROBLOX
 
-A cooperative Roblox game that gamifies the Angel Cloud mental wellness platform. Players ascend through six cloud layers, collect Lore Fragments telling the story of Angel, and help each other climb higher.
+**A fun-first Roblox experience that gamifies mental wellness for kids and teens.**
 
-**Every Angel strengthens the cloud.**
+> _"Fun is the vehicle. Wellness is the destination."_
 
-## Quick Start: Importing into Roblox Studio
+[![Roblox](https://img.shields.io/badge/Platform-Roblox-00A2FF?style=flat&logo=roblox&logoColor=white)](https://www.roblox.com)
+[![Luau](https://img.shields.io/badge/Language-Luau-00A2FF?style=flat)](https://luau-lang.org)
+[![Rojo](https://img.shields.io/badge/Sync-Rojo%207.4-E13835?style=flat)](https://rojo.space)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](#license)
 
-### 1. Create the Roblox Project
+---
 
-1. Open **Roblox Studio** and create a new **Baseplate** place
-2. Delete the default Baseplate part from Workspace
-3. Enable **HttpService** in Game Settings > Security (required for Angel Cloud API)
-4. Enable **Streaming Enabled** in Workspace properties (layers load/unload as player moves vertically)
+## What Is Angel Cloud ROBLOX?
 
-### 2. Import Scripts
+Angel Cloud ROBLOX is a cloud-themed world where players earn **Angel Wings**, collect **Halos** (the only currency), build personal **Cloud Bases**, discover **Easter eggs**, and participate in community-building activities — all while absorbing mental health coping strategies through gameplay, never lectures.
 
-The scripts are organized to match Roblox's service hierarchy:
+A 7-year-old should find it fun. A 16-year-old should find it meaningful. A parent should find it trustworthy.
 
-| Folder on disk | Roblox Studio location |
-|---|---|
-| `ServerScriptService/*.lua` | ServerScriptService (create ModuleScripts, except GameManager which is a Script) |
-| `StarterPlayerScripts/*.lua` | StarterPlayer > StarterPlayerScripts (create ModuleScripts, except ClientController which is a LocalScript) |
-| `ReplicatedStorage/Config/*.lua` | ReplicatedStorage > Config (Folder) > ModuleScripts |
+### Part of the Angel Cloud Ecosystem
 
-**Entry points:**
-- `GameManager.lua` → **Script** (not ModuleScript) in ServerScriptService
-- `ClientController.lua` → **LocalScript** (not ModuleScript) in StarterPlayerScripts
-- Everything else → **ModuleScript**
+Angel Cloud ROBLOX is the public-facing gateway into the **Angel Cloud** mental wellness AI platform, built on top of **ShaneBrain Core** — a local-first AI infrastructure system designed to put powerful, private AI into the hands of everyday families.
 
-### 3. Import Steps
+| Project | Purpose |
+|---------|---------|
+| [ShaneBrain Core](https://github.com/thebardchat/shanebrain-core) | Local AI infrastructure (Raspberry Pi 5 + Ollama + Weaviate) |
+| **Angel Cloud ROBLOX** | Gamified mental wellness for kids & teens (you are here) |
+| Pulsar AI | Blockchain-powered security layer (coming soon) |
 
-For each `.lua` file:
-1. In Roblox Studio, right-click the target service/folder
-2. Create the appropriate script type (Script, LocalScript, or ModuleScript)
-3. Name it to match the filename (without `.lua`)
-4. Copy-paste the file contents into the script editor
+---
 
-**Config folder:** Create a Folder named `Config` inside ReplicatedStorage, then add each config file as a ModuleScript inside it.
+## Game Features
 
-### 4. Configure the Bot Secret
+### 🪽 Angel Wings Progression
+Every player starts with basic wings that evolve through gameplay milestones. Wing tiers reflect emotional growth — Courage, Kindness, Resilience, Wisdom — culminating in **Guardian Angel** status. Wings are earned through character growth, not spending.
 
-In `CrossPlatformBridge.lua`, set the `BOT_SECRET` variable to match your `BOT_INTERNAL_SECRET` environment variable from the Angel Cloud gateway. For production, use Roblox's **Game Settings > Security** to store secrets rather than hardcoding.
+### 💰 Halo Economy
+**Halos** are earned through gameplay: completing quests, helping other players, daily check-ins, mindfulness activities, and community events. There is no Robux pay-to-win. The economy rewards positive behavior and consistency.
 
-### 5. Game Settings
+### 🏗️ Cloud Base Building
+Your personal sky island that you customize and expand. Invite friends, host mini-events, display collectibles, and receive positive messages from visitors.
 
-- **Max Players:** 30 (cooperative focus)
-- **Genre:** Adventure
-- **Enable Studio Access to API Services:** Yes (for HttpService during testing)
+### 🌬️ Wellness Woven Into Play
+Breathing exercises become wind-power mechanics. Journaling becomes quest logs. Gratitude becomes Angel Mail. Conflict resolution becomes cooperative boss battles. **The game IS the wellness tool.**
 
-## Architecture
+### 🥚 Easter Eggs & Secrets
+Hidden collectibles, secret areas, and lore scattered throughout every zone. Exploration is always rewarded.
 
-### Server-Side (ServerScriptService)
+### 🛡️ Safety First
+COPPA/CARU compliant. Moderated communication. Age-appropriate design. Zero dark patterns. Zero predatory monetization.
 
-| Script | Purpose |
-|--------|---------|
-| **GameManager** | Entry point. Initializes all systems, handles player lifecycle, runs update loop |
-| **DataManager** | DataStore persistence. Saves/loads all player data |
-| **MoteSystem** | Light Mote collection and awarding. All progression currency |
-| **ProgressionSystem** | Angel level progression, layer access, ascension detection |
-| **StaminaSystem** | Wing Gauge management, HALT anti-burnout system |
-| **BlessingSystem** | Pay-it-forward blessing bluffs, chain tracking |
-| **LoreSystem** | 65 Lore Fragment collection, codex data |
-| **TrialManager** | Guardian Trial lobbies, instancing, rewards |
-| **CrossPlatformBridge** | HTTP calls to real Angel Cloud API for account linking |
+---
 
-### Client-Side (StarterPlayerScripts)
+## World Zones
 
-| Script | Purpose |
-|--------|---------|
-| **ClientController** | Input handling, wing glide/flight, action key |
-| **UIManager** | HUD, notifications, progress display |
-| **StaminaUI** | Wing Gauge bar with color-coded feedback |
-| **LoreCodexUI** | Constellation map codex (press C to toggle) |
-| **BlessingEffects** | Visual effects for blessings, chains, mote pickups |
-| **LevelUpCinematic** | Ascension sequence (beam, wings, staircase, UI) |
+| Zone | Theme | What You'll Do |
+|------|-------|---------------|
+| ☁️ Cloud Landing | Tutorial | Learn the basics, get your first wings |
+| 🌾 Halo Fields | Exploration | Collect Halos, meet NPCs, socialize |
+| 🌬️ Wind Temple | Breathing/Resilience | Rhythm breathing mechanic, earn Wind Crystals |
+| ⛰️ Storm Peaks | Courage/Challenge | Obstacle courses, cooperative battles |
+| 💙 Kindness Cove | Empathy/Connection | Angel Mail hub, gifting, community events |
+| 📚 Wisdom Library | Problem-Solving | Puzzle rooms, thought challenges |
+| ✨ Guardian Sanctum | Mastery/Endgame | Mentor others, exclusive content |
+| 🌊 Forgotten Falls | Secrets | Hidden lore, rare cosmetics, Easter eggs |
 
-### Config (ReplicatedStorage/Config)
+---
 
-| Module | Purpose |
-|--------|---------|
-| **Layers** | 6 cloud layer definitions with thresholds and features |
-| **Fragments** | All 65 Lore Fragments with wisdom text and lore narratives |
-| **Trials** | 7 Guardian Trial definitions with mechanics and rewards |
-| **Cosmetics** | Purchasable cosmetic items (ethical, no pay-to-win) |
+## Tech Stack
 
-## Progression System
+| Component | Technology |
+|-----------|-----------|
+| Engine | Roblox Studio |
+| Language | Luau |
+| GitHub ↔ Studio Sync | [Rojo 7.4](https://rojo.space) |
+| Framework | [Knit](https://github.com/Sleitnick/Knit) |
+| Data Persistence | [ProfileService](https://github.com/MadStudioRoblox/ProfileService) |
+| Async | [roblox-lua-promise](https://github.com/evaera/roblox-lua-promise) |
+| Package Manager | [Wally](https://wally.run) |
+| Tool Manager | [Foreman](https://github.com/Roblox/foreman) |
 
-Mirrors the real Angel Cloud platform:
+---
 
-| Level | Motes Required | Layer Unlocked |
-|-------|---------------|----------------|
-| Newborn | 0 | The Nursery |
-| Young Angel | 10 | The Meadow |
-| Growing Angel | 25 | The Canopy |
-| Helping Angel | 50 | The Stormwall |
-| Guardian Angel | 100 | The Luminance |
-| Angel | 250 | The Empyrean |
+## Getting Started
 
-## Cross-Platform Linking
+### Prerequisites
 
-The game communicates with the real Angel Cloud gateway at `100.67.120.6:4200` (Tailscale VPN):
+- [Roblox Studio](https://create.roblox.com) (free)
+- [Git](https://git-scm.com)
+- [Foreman](https://github.com/Roblox/foreman) (Rust toolchain manager for Roblox)
+- [Rojo Plugin](https://create.roblox.com/store/asset/13916111004) installed in Roblox Studio
 
-1. User visits their Angel Cloud profile → clicks "Link Roblox" → `POST /api/create-roblox-link-code`
-2. Gets a 6-digit code
-3. In-game, talks to "The Keeper" NPC → enters code → `POST /api/verify-roblox`
-4. Linked player gets starting level/motes matching their real angel_level
-5. Trial completions in Roblox award 2 pts on real platform (rate-limited 10 pts/day) via `POST /api/roblox-activity`
+### Setup
 
-## MVP Scope (Phase 1)
+```bash
+# 1. Clone the repo
+git clone https://github.com/thebardchat/angel-cloud-roblox.git
+cd angel-cloud-roblox
 
-What's included in this scaffold:
+# 2. Install tools (Rojo + Wally)
+foreman install
 
-- Layers 1-2 (The Nursery + The Meadow) fully playable
-- Basic movement + Wing Glide
-- Light Mote collection with bobbing animation
-- Newborn → Young Angel level-up with ascension cinematic
-- 18 Lore Fragments (8 Decision + 8 Emotion + 2 Guardian)
-- 2 Guardian Trials (Bridge of Trust, Echo Chamber)
-- Reflection Pools (stamina recovery boost)
-- Blessing Bluffs (pay-it-forward mechanic)
-- Community Board (communal, not competitive)
-- 5 wing skins in shop (3 basic)
-- DataStore persistence
-- HALT anti-burnout system
-- Cross-platform link verification
-- Daily login reward streak system (7-day cycle)
-- Angel Mail (send curated positive messages to players)
-- Layer indicator UI (vertical minimap)
-- Extended quest chain through all 6 layers (30+ quests)
+# 3. Install packages
+wally install
 
-## Controls
+# 4. Start live sync
+rojo serve
+```
 
-| Key | Action |
-|-----|--------|
-| WASD | Movement |
-| F | Toggle Flight (press once to fly, press again to land) |
-| Space | Jump / Hold to Glide / Go Up while flying |
-| E | Action (interact with NPCs, meditation spots) |
-| C | Open/Close Lore Codex |
-| M | Open/Close Angel Mail |
-| Shift | Descend while flying |
+Then in Roblox Studio, click the **Rojo** plugin button and hit **Connect**. All file changes sync live.
 
-## What Still Needs Roblox Studio Work
+### Building
 
-After importing scripts, you'll need to build in Studio:
+```bash
+# Generate a .rbxlx file (for sharing/testing without live sync)
+rojo build -o AngelCloudRoblox.rbxlx
+```
 
-1. **Terrain/Parts:** Cloud platforms, islands, structures for each layer
-2. **NPC Models:** The Keeper (tutorial), trial entrance NPCs
-3. **Lighting:** Per-layer atmosphere (golden for Nursery, cyan for Meadow)
-4. **Audio:** Ambient sounds, level-up fanfare, blessing chimes
-5. **DevProducts:** Set up Robux products matching Cosmetics.lua IDs
-6. **Game Icon/Thumbnails:** Angel Cloud branding (#0a0a0f bg, #00d4ff accent)
+---
+
+## Project Structure
+
+```
+angel-cloud-roblox/
+├── CLAUDE.md                  ← AI development instructions
+├── README.md                  ← You are here
+├── default.project.json       ← Rojo Studio mapping
+├── foreman.toml               ← Tool versions
+├── wally.toml                 ← Package dependencies
+│
+├── src/
+│   ├── server/                ← Server-side game logic
+│   │   ├── Services/          ← Knit Services (Halo, Wings, Data, Wellness, etc.)
+│   │   └── init.server.lua    ← Server bootstrap
+│   ├── client/                ← Client-side controllers
+│   │   ├── Controllers/       ← Knit Controllers (UI, Input, Breathing, etc.)
+│   │   └── init.client.lua    ← Client bootstrap
+│   ├── shared/                ← Shared configs, types, utilities
+│   │   ├── Config/            ← Game constants and balance numbers
+│   │   ├── Modules/           ← Shared utility modules
+│   │   └── Packages/          ← Wally-managed dependencies
+│   └── starterGui/            ← UI components
+│       ├── HUD/               ← In-game overlay (Halos, quests, minimap)
+│       └── Menus/             ← Full-screen menus (Cloud Base, Collection Log, etc.)
+│
+├── assets/                    ← Design documents (not game assets)
+│   ├── gdd_master.md          ← Game Design Document
+│   ├── halo_economy.md        ← Economy balance spreadsheet
+│   ├── wing_progression.md    ← Wing tier system
+│   ├── wellness_mechanics.md  ← Therapeutic mechanics mapping
+│   ├── easter_eggs_tracker.md ← Hidden content catalog
+│   ├── safety_compliance.md   ← COPPA/CARU checklist
+│   └── launch_roadmap.md      ← Development timeline
+│
+└── tests/                     ← Test scripts
+```
+
+---
+
+## Development Workflow
+
+This project uses **Rojo** to bridge GitHub and Roblox Studio. All code lives in `.lua` files in this repo — never in Studio's proprietary format.
+
+```
+You edit .lua files → Rojo syncs to Studio → You playtest in Studio → Commit to GitHub
+```
+
+### With Claude Code
+
+This repo includes a `CLAUDE.md` file that instructs [Claude Code](https://docs.anthropic.com/en/docs/build-with-claude/claude-code) to act as the lead game developer. Claude Code can:
+
+- Scaffold new services and controllers
+- Write Luau code following project standards
+- Generate config files with balanced economy numbers
+- Create design documents
+- Commit and push changes to this repo
+
+```bash
+# Open Claude Code in the repo and it reads CLAUDE.md automatically
+cd angel-cloud-roblox
+claude
+```
+
+### Branch Strategy
+
+```bash
+feature/halo-service      # New features
+fix/data-save-bug          # Bug fixes
+docs/update-gdd            # Documentation
+```
+
+Always branch from `main`. Never commit directly to `main`.
+
+---
 
 ## Design Philosophy
 
-- **Cooperative, not competitive** — No PvP, no individual leaderboards
-- **Ethical monetization** — Cosmetics only, never gameplay advantages
-- **Mental wellness** — HALT system, reflection pools, wisdom in every fragment
-- **Pay it forward** — Blessing chains, Guardian Duty, community board
-- **Angel's story** — Every fragment honors Angel Brazelton and carries real wisdom from WISDOM-CORE.md
+### What Makes This Different
+
+Most "wellness" Roblox experiences are glorified obbies with motivational posters. Angel Cloud ROBLOX is a **real game** with persistent progression, social systems, and replayable content that happens to make kids more emotionally resilient.
+
+**Bad example:** "Players enter the Mindfulness Zone and watch a breathing tutorial."
+
+**Our approach:** "Players discover the Wind Temple where ancient cloud spirits are fading. To restore them, players channel wind energy by matching a breathing rhythm (inhale = charge, exhale = release). Each successful cycle powers a Wind Crystal. Collect 5 crystals to unlock the Storm Guardian boss fight."
+
+The breathing IS the mechanic. The wellness IS the game.
+
+### Design Tests
+
+Every feature must pass these checks:
+
+1. **Fun Test:** Would a kid choose this over Adopt Me?
+2. **Stealth Test:** Would a player realize they're learning a coping skill?
+3. **Mobile Test:** Does this work with thumbs on a 4" screen?
+4. **Safety Test:** Could this harm, exploit, or mislead a child?
+5. **Economy Test:** Does this maintain healthy Halo earn/spend balance?
+
+---
+
+## Market Context
+
+- **85.3M** daily active Roblox users, largest segment under 13
+- **72%** of Roblox users ages 13-17 say mental health matters to them (Roblox 2024)
+- "Love, Your Mind World" (Ad Council/Roblox, 2025) proved teen mental health experiences work on platform
+- "Super U Story" demonstrated clinical effectiveness of Roblox-based wellness games (JMIR, 2025)
+- Angel Cloud ROBLOX goes further: wellness isn't a feature — it's the game
+
+---
+
+## Contributing
+
+This is currently a family project led by Shane ([thebardchat](https://github.com/thebardchat)). If you're interested in contributing, open an issue to start a conversation.
+
+### Code Standards
+
+- Luau with full type annotations
+- Knit Service/Controller pattern
+- Server-authoritative architecture (never trust the client)
+- ProfileService for all persistent data
+- Mobile-first UI design
+- 30+ FPS target on low-end mobile
+
+See `CLAUDE.md` for complete coding standards and conventions.
+
+---
+
+## Roadmap
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| Phase 1 | MVP — Scaffold, data, economy, tutorial zones | 🔨 In Progress |
+| Phase 2 | Core Loop — Wings, quests, Wind Temple, Cloud Bases | ⏳ Planned |
+| Phase 3 | Content — All zones, Easter eggs, pets, events | ⏳ Planned |
+| Phase 4 | Polish & Launch — Optimization, sound, beta, release | ⏳ Planned |
+
+---
+
+## The Mission
+
+Angel Cloud ROBLOX is part of a bigger mission: **800 million Windows users** are about to lose security updates in October 2025. The Angel Cloud ecosystem — starting with ShaneBrain Core and extending through this game — is building the infrastructure to keep families safe, connected, and resilient in a digital world that doesn't always have their best interests in mind.
+
+This game is how we reach the kids. The AI protects their data. The blockchain secures their future. It all starts with a cloud, a halo, and a pair of wings.
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+**Built with ❤️ by Shane & the Angel Cloud team in Hazel Green, Alabama.**
