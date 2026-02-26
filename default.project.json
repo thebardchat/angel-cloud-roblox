@@ -68,10 +68,7 @@
     },
 
     "StarterGui": {
-      "$className": "StarterGui",
-      "$properties": {
-        "ScreenCompatibilityMode": "TextSize"
-      }
+      "$className": "StarterGui"
     },
 
     "Lighting": {
