@@ -25,6 +25,8 @@ local SoundManager = require(script.Parent.SoundManager)
 local ShopHandler = require(script.Parent.ShopHandler)
 local RetroSystem = require(script.Parent.RetroSystem)
 local QuestSystem = require(script.Parent.QuestSystem)
+local DailyRewardSystem = require(script.Parent.DailyRewardSystem)
+local AngelMailSystem = require(script.Parent.AngelMailSystem)
 
 local Layers = require(ReplicatedStorage.Config.Layers)
 
@@ -78,6 +80,8 @@ function GameManager.Init()
         { name = "AtmosphereSystem", init = AtmosphereSystem.Init },
         { name = "RetroSystem", init = RetroSystem.Init },
         { name = "QuestSystem", init = QuestSystem.Init },
+        { name = "DailyRewardSystem", init = DailyRewardSystem.Init },
+        { name = "AngelMailSystem", init = AngelMailSystem.Init },
     }
 
     for _, sys in ipairs(subsystems) do
@@ -190,6 +194,9 @@ function GameManager.OnPlayerAdded(player: Player)
     -- Check for launch week Founder's Halo + badges
     pcall(BadgeHandler.OnPlayerAdded, player)
 
+    -- Check daily reward availability
+    pcall(DailyRewardSystem.OnPlayerJoined, player)
+
     -- Welcome message
     ServerMessage:FireClient(player, {
         type = "welcome",
@@ -211,6 +218,7 @@ function GameManager.OnPlayerRemoving(player: Player)
     AtmosphereSystem.RemovePlayer(player)
     NPCSystem.RemovePlayer(player)
     RetroSystem.RemovePlayer(player)
+    AngelMailSystem.RemovePlayer(player)
 end
 
 function GameManager.SpawnAtLayer(player: Player, character: Model)
@@ -937,8 +945,6 @@ function GameManager.SpawnSpeedPads(layerFolder: Folder, layerDef: any, count: n
         pad.Color = Color3.fromRGB(0, 255, 150)
         pad.Transparency = 0.2
         pad.Parent = layerFolder
-
-        local corner = Instance.new("UICorner")
 
         -- Arrow decal to show it's a boost
         local gui = Instance.new("SurfaceGui")

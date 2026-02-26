@@ -160,7 +160,167 @@ local QUESTS = {
         objective = "wing_level",
         target = 10,
         reward = { motes = 25 },
-        nextQuest = nil,  -- end of current quest chain
+        nextQuest = "send_mail",
+    },
+
+    -- ANGEL MAIL QUESTS
+    {
+        id = "send_mail",
+        title = "Spread the Word",
+        description = "Send 3 Angel Mail messages to other players (press M)",
+        layer = 1,
+        objective = "mail_sent",
+        target = 3,
+        reward = { motes = 10 },
+        nextQuest = "reach_canopy",
+    },
+
+    -- LAYER 3 QUESTS (The Canopy)
+    {
+        id = "reach_canopy",
+        title = "Into the Canopy",
+        description = "Reach 25 total Motes and enter The Canopy",
+        layer = 2,
+        objective = "reach_layer",
+        target = 3,
+        reward = { motes = 15 },
+        nextQuest = "canopy_explorer",
+    },
+    {
+        id = "canopy_explorer",
+        title = "Canopy Explorer",
+        description = "Collect 20 Motes in The Canopy",
+        layer = 3,
+        objective = "collect_motes_in_session",
+        target = 20,
+        reward = { motes = 10 },
+        nextQuest = "five_blessings",
+    },
+    {
+        id = "five_blessings",
+        title = "Chain of Light",
+        description = "Send 5 total Blessings to other Angels",
+        layer = 2,
+        objective = "total_blessings",
+        target = 5,
+        reward = { motes = 15 },
+        nextQuest = "ten_fragments",
+    },
+    {
+        id = "ten_fragments",
+        title = "Lore Keeper",
+        description = "Collect 10 Lore Fragments — explore every layer!",
+        layer = 1,
+        objective = "fragments",
+        target = 10,
+        reward = { motes = 20 },
+        nextQuest = "reach_stormwall",
+    },
+
+    -- LAYER 4 QUESTS (The Stormwall)
+    {
+        id = "reach_stormwall",
+        title = "Storm Breaker",
+        description = "Reach 50 total Motes and brave The Stormwall",
+        layer = 3,
+        objective = "reach_layer",
+        target = 4,
+        reward = { motes = 20 },
+        nextQuest = "stormwall_flight",
+    },
+    {
+        id = "stormwall_flight",
+        title = "Wind Rider",
+        description = "Fly for 60 seconds through The Stormwall's winds",
+        layer = 4,
+        objective = "fly_time",
+        target = 60,
+        reward = { motes = 15 },
+        nextQuest = "all_starfish",
+    },
+    {
+        id = "all_starfish",
+        title = "Starfish Whisperer",
+        description = "Find 7 hidden Brown Starfish across all layers",
+        layer = 1,
+        objective = "starfish_count",
+        target = 7,
+        reward = { motes = 25 },
+        nextQuest = "helping_angel",
+    },
+    {
+        id = "helping_angel",
+        title = "Helping Angel",
+        description = "Send 10 Angel Mails and 10 Blessings — be the light",
+        layer = 1,
+        objective = "helper_score",
+        target = 20,
+        reward = { motes = 30 },
+        nextQuest = "reach_luminance",
+    },
+
+    -- LAYER 5 QUESTS (The Luminance)
+    {
+        id = "reach_luminance",
+        title = "The Luminance Awaits",
+        description = "Reach 100 total Motes to enter The Luminance",
+        layer = 4,
+        objective = "reach_layer",
+        target = 5,
+        reward = { motes = 25 },
+        nextQuest = "luminance_fragments",
+    },
+    {
+        id = "luminance_fragments",
+        title = "Truth Seeker",
+        description = "Collect 30 Lore Fragments — the story grows clearer",
+        layer = 1,
+        objective = "fragments",
+        target = 30,
+        reward = { motes = 30 },
+        nextQuest = "guardian_trial",
+    },
+    {
+        id = "guardian_trial",
+        title = "Guardian's Test",
+        description = "Complete a Guardian Trial with another Angel",
+        layer = 2,
+        objective = "trials_completed",
+        target = 1,
+        reward = { motes = 25 },
+        nextQuest = "reach_empyrean",
+    },
+
+    -- LAYER 6 QUESTS (The Empyrean)
+    {
+        id = "reach_empyrean",
+        title = "The Empyrean",
+        description = "Reach 250 total Motes — ascend to the highest cloud",
+        layer = 5,
+        objective = "reach_layer",
+        target = 6,
+        reward = { motes = 50 },
+        nextQuest = "final_collection",
+    },
+    {
+        id = "final_collection",
+        title = "The Full Story",
+        description = "Collect 50 Lore Fragments — Angel's story nears completion",
+        layer = 1,
+        objective = "fragments",
+        target = 50,
+        reward = { motes = 50 },
+        nextQuest = "true_angel",
+    },
+    {
+        id = "true_angel",
+        title = "True Angel",
+        description = "Max wings, 20+ blessings, 50+ fragments, all starfish — become the light",
+        layer = 1,
+        objective = "true_angel_score",
+        target = 1,
+        reward = { motes = 100 },
+        nextQuest = nil,  -- THE END (for now)
     },
 }
 
@@ -304,6 +464,49 @@ function QuestSystem.CalculateProgress(player: Player, quest: any): number
             end
         end
         return count
+
+    elseif objective == "mail_sent" then
+        return data.mailSentCount or 0
+
+    elseif objective == "total_blessings" then
+        return data.blessingsGiven or 0
+
+    elseif objective == "trials_completed" then
+        local count = 0
+        if data.trialsCompleted then
+            for _ in pairs(data.trialsCompleted) do
+                count = count + 1
+            end
+        end
+        return count
+
+    elseif objective == "helper_score" then
+        -- Combined: mail sent + blessings given
+        return (data.mailSentCount or 0) + (data.blessingsGiven or 0)
+
+    elseif objective == "true_angel_score" then
+        -- Check all conditions: max wings, 20+ blessings, 50+ fragments, all starfish
+        local wingOk = (data.wingLevel or 1) >= 10
+        local blessOk = (data.blessingsGiven or 0) >= 20
+        local fragCount = 0
+        if data.collectedFragments then
+            for _ in pairs(data.collectedFragments) do
+                fragCount = fragCount + 1
+            end
+        end
+        local fragOk = fragCount >= 50
+        local starCount = 0
+        if data.starfishFound then
+            for _ in pairs(data.starfishFound) do
+                starCount = starCount + 1
+            end
+        end
+        local starOk = starCount >= 10
+
+        if wingOk and blessOk and fragOk and starOk then
+            return 1
+        end
+        return 0
     end
 
     return 0
@@ -430,6 +633,20 @@ function QuestSystem.OnStarfishFound(player: Player)
 end
 
 function QuestSystem.OnFragmentCollected(player: Player)
+    local data = DataManager.GetData(player)
+    if not data or not data.activeQuest then return end
+
+    QuestSystem.SyncQuest(player)
+end
+
+function QuestSystem.OnMailSent(player: Player)
+    local data = DataManager.GetData(player)
+    if not data or not data.activeQuest then return end
+
+    QuestSystem.SyncQuest(player)
+end
+
+function QuestSystem.OnTrialCompleted(player: Player)
     local data = DataManager.GetData(player)
     if not data or not data.activeQuest then return end
 

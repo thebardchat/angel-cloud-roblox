@@ -124,15 +124,21 @@ What's included in this scaffold:
 - DataStore persistence
 - HALT anti-burnout system
 - Cross-platform link verification
+- Daily login reward streak system (7-day cycle)
+- Angel Mail (send curated positive messages to players)
+- Layer indicator UI (vertical minimap)
+- Extended quest chain through all 6 layers (30+ quests)
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
 | WASD | Movement |
-| Space | Jump / Hold to Glide (Layer 2+) / Double-tap for Flight (Layer 5+) |
+| F | Toggle Flight (press once to fly, press again to land) |
+| Space | Jump / Hold to Glide / Go Up while flying |
 | E | Action (interact with NPCs, meditation spots) |
 | C | Open/Close Lore Codex |
+| M | Open/Close Angel Mail |
 | Shift | Descend while flying |
 
 ## What Still Needs Roblox Studio Work

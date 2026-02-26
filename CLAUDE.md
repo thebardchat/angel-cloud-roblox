@@ -123,7 +123,9 @@ angel-cloud-roblox/
 │   ├── SoundManager.lua               # Server-side audio management
 │   ├── BadgeHandler.lua               # Roblox badge awards
 │   ├── CrossPlatformBridge.lua        # Angel Cloud ↔ Roblox linking
-│   └── RetroSystem.lua                # Retrospective/reflection system
+│   ├── RetroSystem.lua                # Retrospective/reflection system
+│   ├── DailyRewardSystem.lua          # Daily login streak rewards
+│   └── AngelMailSystem.lua            # Player-to-player positive messaging
 ├── StarterPlayerScripts/              # Client-side scripts
 │   ├── ClientController.client.lua    # Input, movement, flight, glide
 │   ├── UIManager.lua                  # Main HUD & UI orchestration
@@ -135,7 +137,10 @@ angel-cloud-roblox/
 │   ├── BlessingEffects.lua            # Visual effects for blessings
 │   ├── LevelUpCinematic.lua           # Level-up celebration sequence
 │   ├── RotaryDialUI.lua               # Secret code input dial
-│   └── SoundPlayer.lua                # Client-side audio playback
+│   ├── SoundPlayer.lua                # Client-side audio playback
+│   ├── DailyRewardUI.lua              # Daily reward popup & streak display
+│   ├── AngelMailUI.lua                # Angel Mail send/receive interface
+│   └── LayerIndicatorUI.lua           # Vertical layer position indicator
 ├── tests/                             # TestEZ unit & integration tests
 │   ├── runner.lua                     # Test runner entry point
 │   ├── ServerScriptService/           # Server module tests
@@ -357,6 +362,8 @@ end
 | BadgeHandler | `BadgeHandler.lua` | Roblox badge awards |
 | CrossPlatformBridge | `CrossPlatformBridge.lua` | Angel Cloud ↔ Roblox account linking |
 | RetroSystem | `RetroSystem.lua` | Retrospective/reflection mechanics |
+| DailyRewardSystem | `DailyRewardSystem.lua` | Daily login streak rewards (7-day cycle) |
+| AngelMailSystem | `AngelMailSystem.lua` | Player-to-player positive messaging |
 
 ### Core Client Systems
 | System | File | Purpose |
@@ -372,6 +379,9 @@ end
 | LevelUpCinematic | `LevelUpCinematic.lua` | Level-up celebration |
 | RotaryDialUI | `RotaryDialUI.lua` | Secret code dial |
 | SoundPlayer | `SoundPlayer.lua` | Client audio playback |
+| DailyRewardUI | `DailyRewardUI.lua` | Daily reward popup & streak |
+| AngelMailUI | `AngelMailUI.lua` | Angel Mail send/receive UI |
+| LayerIndicatorUI | `LayerIndicatorUI.lua` | Vertical layer position map |
 
 ---
 

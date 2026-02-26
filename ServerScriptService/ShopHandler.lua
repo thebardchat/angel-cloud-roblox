@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local DataManager = require(script.Parent.DataManager)
 local Cosmetics = require(ReplicatedStorage.Config.Cosmetics)
+local Layers = require(ReplicatedStorage.Config.Layers)
 
 local ShopHandler = {}
 
@@ -147,7 +148,7 @@ function ShopHandler.HandlePurchase(player: Player, itemId: string)
     if item.requiredLayer then
         local layerIndex = data.layerIndex or 1
         if layerIndex < item.requiredLayer then
-            local requiredLayer = Layers and Layers.GetLayerByIndex(item.requiredLayer)
+            local requiredLayer = Layers.GetLayerByIndex(item.requiredLayer)
             local layerName = requiredLayer and requiredLayer.name or ("Layer " .. item.requiredLayer)
             ShopResult:FireClient(player, {
                 success = false,

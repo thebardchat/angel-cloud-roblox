@@ -130,6 +130,15 @@ function ClientController.Init()
     local QuestUI = require(script.Parent.QuestUI)
     QuestUI.Init()
 
+    local DailyRewardUI = require(script.Parent.DailyRewardUI)
+    DailyRewardUI.Init()
+
+    local AngelMailUI = require(script.Parent.AngelMailUI)
+    AngelMailUI.Init()
+
+    local LayerIndicatorUI = require(script.Parent.LayerIndicatorUI)
+    LayerIndicatorUI.Init()
+
     print("[ClientController] Angel Cloud client initialized")
 end
 

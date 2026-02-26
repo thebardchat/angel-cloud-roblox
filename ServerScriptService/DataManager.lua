@@ -66,6 +66,9 @@ if ProfileStoreAvailable then
             completedQuests = {},
             firstJoin = 0,
             lastSeen = 0,
+            dailyStreak = 0,
+            lastDailyClaimTime = 0,
+            mailSentCount = 0,
         })
     end)
     if storeOk then
@@ -123,6 +126,9 @@ local DEFAULT_DATA = {
     completedQuests = {},
     firstJoin = 0,
     lastSeen = 0,
+    dailyStreak = 0,
+    lastDailyClaimTime = 0,
+    mailSentCount = 0,
 }
 
 function DataManager.GetDefaultData(): { [string]: any }
