@@ -11,57 +11,52 @@ local TweenService = game:GetService("TweenService")
 
 local SoundManager = {}
 
--- Real audio asset IDs from Roblox Creator Store
--- Use Studio Music Player plugin to preview and swap IDs as needed
+-- NOTE: Ambient music now plays on the CLIENT (SoundPlayer.lua)
+-- Server sounds in SoundService are NOT audible to players!
+-- This module still handles SFX dispatch via RemoteEvent → client
+--
+-- SFX asset IDs sent to client for playback:
 local AUDIO = {
-    -- Ambient tracks per layer (loop) — each layer distinct
+    -- Ambient is handled client-side now — these are unused but kept for reference
     ambient = {
-        [1] = "rbxassetid://1848354536",   -- Nursery: relaxed, calm, warm lullaby
-        [2] = "rbxassetid://1841044496",   -- Meadow: ethereal world, bright nature
-        [3] = "rbxassetid://1837536733",   -- Canopy: heavenly, enchanted forest
-        [4] = "rbxassetid://9114444008",   -- Stormwall: dramatic tension
-        [5] = "rbxassetid://9043887091",   -- Luminance: crystal clear, cosmic ambient
-        [6] = "rbxassetid://1837536733",   -- Empyrean: heavenly choir, transcendent
+        [1] = "rbxassetid://1848354536",   -- Relaxed Scene
+        [2] = "rbxassetid://1844272089",   -- Positive Calm
+        [3] = "rbxassetid://1837429944",   -- Soft Music
+        [4] = "rbxassetid://7399814871",   -- No Light (Boa pack)
+        [5] = "rbxassetid://7399811837",   -- Cloudy Space (Boa pack)
+        [6] = "rbxassetid://7399815715",   -- Space Cruise (Boa pack)
     },
 
-    -- Environmental ambient tracks (layered on top of main ambient)
-    environment = {
-        [1] = "rbxassetid://6455667685",   -- Nursery: soft wind
-        [2] = "rbxassetid://4612093970",   -- Meadow: nature/birds ambient
-        [3] = "rbxassetid://4612093970",   -- Canopy: forest/rustling
-        [4] = "rbxassetid://9114444008",   -- Stormwall: distant thunder rumble
-        [5] = "rbxassetid://9043887091",   -- Luminance: crystal resonance
-        [6] = "rbxassetid://9126073011",   -- Empyrean: celestial chimes
-    },
+    environment = {},  -- handled client-side
 
-    -- Sound effects
+    -- Sound effects (sent via RemoteEvent to client for playback)
     sfx = {
-        mote_collect = "rbxassetid://9126073011",     -- sparkle bell chime
-        level_up = "rbxassetid://2686079706",          -- ascending level up fanfare
-        blessing_send = "rbxassetid://9126073011",     -- sparkle tone
-        blessing_receive = "rbxassetid://5826672935",  -- announcement chime
-        fragment_collect = "rbxassetid://5654075071",  -- sparkle sound effect
-        gate_open = "rbxassetid://206902974",          -- victory/grand opening
-        trial_start = "rbxassetid://9125647873",       -- magic zoom whoosh
-        trial_complete = "rbxassetid://2686079706",    -- level up / victory
-        npc_talk = "rbxassetid://7128958209",          -- bell ding
-        wing_glide = "rbxassetid://9113081793",        -- airy whoosh
-        wing_flight = "rbxassetid://6455667685",       -- wind sound
-        stamina_low = "rbxassetid://2909601104",       -- bell warning
-        halt_reminder = "rbxassetid://7128958209",     -- gentle bell ding
-        shop_purchase = "rbxassetid://5826672935",     -- announcement chime
-        meditation_start = "rbxassetid://9126073011",  -- sparkle bell tone
-        lightning = "rbxassetid://9114444008",          -- fire whoosh (thunder-like)
-        bounce = "rbxassetid://2764461710",            -- bounce boing
-        speed_boost = "rbxassetid://9125647873",       -- magic zoom whoosh
-        wing_forge = "rbxassetid://9113446696",        -- blacksmith anvil hit
-        speed_pad = "rbxassetid://9125647873",         -- whoosh for speed pads
-        stairway_step = "rbxassetid://9126073011",     -- gentle chime on stair steps
-        gate_approach = "rbxassetid://206902974",      -- grand approach fanfare
-        community_board = "rbxassetid://7128958209",   -- ding for board interaction
-        mail_sent = "rbxassetid://5826672935",         -- chime for angel mail
-        mail_received = "rbxassetid://9126073011",     -- sparkle for receiving mail
-        daily_reward = "rbxassetid://2686079706",      -- fanfare for daily reward
+        mote_collect = "rbxassetid://9125402735",
+        level_up = "rbxassetid://9125402735",
+        blessing_send = "rbxassetid://9125402735",
+        blessing_receive = "rbxassetid://9125402735",
+        fragment_collect = "rbxassetid://9125402735",
+        gate_open = "rbxassetid://9125402735",
+        trial_start = "rbxassetid://9125402735",
+        trial_complete = "rbxassetid://9125402735",
+        npc_talk = "rbxassetid://9125402735",
+        wing_glide = "rbxassetid://9125402735",
+        wing_flight = "rbxassetid://9125402735",
+        stamina_low = "rbxassetid://9125402735",
+        halt_reminder = "rbxassetid://9125402735",
+        shop_purchase = "rbxassetid://9125402735",
+        meditation_start = "rbxassetid://9125402735",
+        lightning = "rbxassetid://9125402735",
+        bounce = "rbxassetid://9125402735",
+        speed_boost = "rbxassetid://9125402735",
+        wing_forge = "rbxassetid://9125402735",
+        speed_pad = "rbxassetid://9125402735",
+        stairway_step = "rbxassetid://9125402735",
+        gate_approach = "rbxassetid://9125402735",
+        community_board = "rbxassetid://9125402735",
+        mail_sent = "rbxassetid://9125402735",
+        mail_received = "rbxassetid://9125402735",
+        daily_reward = "rbxassetid://9125402735",
     },
 }
 
@@ -75,21 +70,8 @@ local LAYER_VOLUMES = {
     [6] = 0.35,  -- Empyrean: full
 }
 
--- Environmental ambient volume (layered on top, lower volume)
-local ENV_VOLUMES = {
-    [1] = 0.15,
-    [2] = 0.2,
-    [3] = 0.2,
-    [4] = 0.25,
-    [5] = 0.15,
-    [6] = 0.1,
-}
-
-local CROSSFADE_TIME = 3  -- seconds to crossfade between layer ambients
-
--- Active sounds
-local ambientSounds = {}  -- [layerIndex] = Sound instance
-local envSounds = {}       -- [layerIndex] = Sound instance (environmental layer)
+-- Ambient music is now CLIENT-SIDE only (see SoundPlayer.lua)
+-- Server Sound objects in SoundService are inaudible to players
 local currentAmbientLayer = 0
 
 -- SFX sound pool (reusable)
@@ -109,30 +91,8 @@ function SoundManager.Init()
     sfxFolder.Name = "SFX"
     sfxFolder.Parent = SoundService
 
-    -- Pre-create ambient sound instances for each layer
-    for layerIndex, assetId in pairs(AUDIO.ambient) do
-        local sound = Instance.new("Sound")
-        sound.Name = "Ambient_Layer" .. layerIndex
-        sound.SoundId = assetId
-        sound.Looped = true
-        sound.Volume = 0
-        sound.Playing = false
-        sound.SoundGroup = nil
-        sound.Parent = SoundService
-        ambientSounds[layerIndex] = sound
-    end
-
-    -- Pre-create environmental ambient instances (layered on top of main ambient)
-    for layerIndex, assetId in pairs(AUDIO.environment) do
-        local sound = Instance.new("Sound")
-        sound.Name = "Environment_Layer" .. layerIndex
-        sound.SoundId = assetId
-        sound.Looped = true
-        sound.Volume = 0
-        sound.Playing = false
-        sound.Parent = SoundService
-        envSounds[layerIndex] = sound
-    end
+    -- NOTE: Ambient music is now handled client-side in SoundPlayer.lua
+    -- Server Sound objects are inaudible to players — don't create them here
 
     -- Pre-create reusable SFX instances
     for sfxName, assetId in pairs(AUDIO.sfx) do
@@ -145,63 +105,15 @@ function SoundManager.Init()
         sfxPool[sfxName] = sound
     end
 
-    -- Start with Layer 1 ambient
-    SoundManager.SetAmbientLayer(1)
-
-    print("[SoundManager] Sound system initialized with " .. #AUDIO.sfx .. " SFX loaded")
+    print("[SoundManager] Sound system initialized — ambient music is CLIENT-SIDE")
 end
 
+-- SetAmbientLayer is called by AtmosphereSystem but ambient now plays on client
+-- The AtmosphereSystem fires AtmosphereUpdate RemoteEvent which the client's
+-- SoundPlayer.lua listens to for layer music crossfading
 function SoundManager.SetAmbientLayer(layerIndex: number)
-    if layerIndex == currentAmbientLayer then return end
-
-    -- Fade out current ambient + environment
-    if currentAmbientLayer > 0 then
-        local oldSound = ambientSounds[currentAmbientLayer]
-        if oldSound then
-            local fadeOut = TweenService:Create(oldSound, TweenInfo.new(CROSSFADE_TIME), {
-                Volume = 0,
-            })
-            fadeOut:Play()
-            fadeOut.Completed:Connect(function()
-                oldSound.Playing = false
-            end)
-        end
-
-        local oldEnv = envSounds[currentAmbientLayer]
-        if oldEnv then
-            local fadeOutEnv = TweenService:Create(oldEnv, TweenInfo.new(CROSSFADE_TIME), {
-                Volume = 0,
-            })
-            fadeOutEnv:Play()
-            fadeOutEnv.Completed:Connect(function()
-                oldEnv.Playing = false
-            end)
-        end
-    end
-
-    -- Fade in new ambient
-    local newSound = ambientSounds[layerIndex]
-    if newSound then
-        newSound.Volume = 0
-        newSound.Playing = true
-        local targetVolume = LAYER_VOLUMES[layerIndex] or 0.3
-        TweenService:Create(newSound, TweenInfo.new(CROSSFADE_TIME), {
-            Volume = targetVolume,
-        }):Play()
-    end
-
-    -- Fade in new environmental ambient
-    local newEnv = envSounds[layerIndex]
-    if newEnv then
-        newEnv.Volume = 0
-        newEnv.Playing = true
-        local envTarget = ENV_VOLUMES[layerIndex] or 0.15
-        TweenService:Create(newEnv, TweenInfo.new(CROSSFADE_TIME + 1), {
-            Volume = envTarget,
-        }):Play()
-    end
-
     currentAmbientLayer = layerIndex
+    -- Client handles the actual music playback via AtmosphereUpdate event
 end
 
 function SoundManager.PlaySFX(sfxName: string, volumeOverride: number?)
