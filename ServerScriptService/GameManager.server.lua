@@ -27,6 +27,9 @@ local RetroSystem = require(script.Parent.RetroSystem)
 local QuestSystem = require(script.Parent.QuestSystem)
 local DailyRewardSystem = require(script.Parent.DailyRewardSystem)
 local AngelMailSystem = require(script.Parent.AngelMailSystem)
+local DevilSystem = require(script.Parent.DevilSystem)
+local BrainrotSystem = require(script.Parent.BrainrotSystem)
+local CloudBaseSystem = require(script.Parent.CloudBaseSystem)
 
 local Layers = require(ReplicatedStorage.Config.Layers)
 
@@ -82,6 +85,9 @@ function GameManager.Init()
         { name = "QuestSystem", init = QuestSystem.Init },
         { name = "DailyRewardSystem", init = DailyRewardSystem.Init },
         { name = "AngelMailSystem", init = AngelMailSystem.Init },
+        { name = "BrainrotSystem", init = BrainrotSystem.Init },
+        { name = "DevilSystem", init = DevilSystem.Init },
+        { name = "CloudBaseSystem", init = CloudBaseSystem.Init },
     }
 
     for _, sys in ipairs(subsystems) do
@@ -197,6 +203,12 @@ function GameManager.OnPlayerAdded(player: Player)
     -- Check daily reward availability
     pcall(DailyRewardSystem.OnPlayerJoined, player)
 
+    -- Initialize brainrot carrying state
+    pcall(BrainrotSystem.OnPlayerJoined, player)
+
+    -- Build player's personal cloud base
+    pcall(CloudBaseSystem.OnPlayerJoined, player)
+
     -- Welcome message
     ServerMessage:FireClient(player, {
         type = "welcome",
@@ -219,6 +231,9 @@ function GameManager.OnPlayerRemoving(player: Player)
     NPCSystem.RemovePlayer(player)
     RetroSystem.RemovePlayer(player)
     AngelMailSystem.RemovePlayer(player)
+    DevilSystem.RemovePlayer(player)
+    BrainrotSystem.RemovePlayer(player)
+    CloudBaseSystem.RemovePlayer(player)
 end
 
 function GameManager.SpawnAtLayer(player: Player, character: Model)
@@ -336,7 +351,7 @@ function GameManager.AttachWingTrail(character: Model)
     trail.Parent = hrp
 end
 
--- Give everyone REAL visible wings on their back from the start
+-- Give everyone REAL multi-part feathered wings on their back
 function GameManager.AttachWings(character: Model, data: { [string]: any })
     if character:FindFirstChild("AngelWings") then return end
 
@@ -355,63 +370,149 @@ function GameManager.AttachWings(character: Model, data: { [string]: any })
         wingLevel = data.wingLevel or 1
     end
 
-    -- Wing size scales with BOTH angel level AND wing forge level
-    local wingScale = 1 + (levelIndex - 1) * 0.4 + (wingLevel - 1) * 0.25
-    local wingColor = Color3.fromRGB(0, 212, 255)
+    -- Wing size scales with level + forge
+    local wingScale = 1 + (levelIndex - 1) * 0.3 + (wingLevel - 1) * 0.15
 
-    -- Color by level
+    -- Color by level — softer, more natural angel colors
     local WING_COLORS = {
-        Color3.fromRGB(150, 200, 255),   -- Newborn: soft blue
-        Color3.fromRGB(0, 212, 255),     -- Young Angel: cyan
-        Color3.fromRGB(0, 255, 200),     -- Growing: teal
-        Color3.fromRGB(180, 100, 255),   -- Helping: purple
-        Color3.fromRGB(100, 200, 255),   -- Guardian: bright blue
-        Color3.fromRGB(255, 255, 255),   -- Archangel: white
+        Color3.fromRGB(245, 245, 255),   -- Newborn: pure white
+        Color3.fromRGB(230, 240, 255),   -- Young Angel: soft sky blue
+        Color3.fromRGB(220, 245, 235),   -- Growing: soft mint
+        Color3.fromRGB(235, 220, 255),   -- Helping: soft lavender
+        Color3.fromRGB(255, 245, 220),   -- Guardian: warm gold-white
+        Color3.fromRGB(255, 255, 255),   -- Angel: radiant white
     }
-    wingColor = WING_COLORS[levelIndex] or wingColor
+    local wingColor = WING_COLORS[levelIndex] or Color3.fromRGB(245, 245, 255)
 
-    -- LEFT wing
-    local leftWing = Instance.new("Part")
-    leftWing.Name = "AngelWings"
-    leftWing.Size = Vector3.new(0.3, 3 * wingScale, 2 * wingScale)
-    leftWing.Material = Enum.Material.ForceField
-    leftWing.Color = wingColor
-    leftWing.Transparency = 0.25
-    leftWing.CanCollide = false
-    leftWing.Massless = true
+    -- Secondary feather color (slightly darker for depth)
+    local WING_TIPS = {
+        Color3.fromRGB(220, 225, 240),
+        Color3.fromRGB(200, 220, 245),
+        Color3.fromRGB(190, 230, 215),
+        Color3.fromRGB(210, 195, 240),
+        Color3.fromRGB(240, 225, 190),
+        Color3.fromRGB(240, 240, 250),
+    }
+    local tipColor = WING_TIPS[levelIndex] or Color3.fromRGB(220, 225, 240)
 
-    local leftWeld = Instance.new("WeldConstraint")
-    leftWeld.Part0 = torso
-    leftWeld.Part1 = leftWing
-    leftWeld.Parent = leftWing
+    -- Build real feathered wings from multiple parts
+    local wingModel = Instance.new("Model")
+    wingModel.Name = "AngelWings"
 
-    leftWing.CFrame = torso.CFrame * CFrame.new(-1.5 * wingScale, 0.5, 0.8) * CFrame.Angles(0, 0, math.rad(-25))
-    leftWing.Parent = character
+    for side = -1, 1, 2 do
+        local sideName = side == -1 and "L" or "R"
+        local sideSign = side
 
-    -- RIGHT wing
-    local rightWing = Instance.new("Part")
-    rightWing.Name = "AngelWingR"
-    rightWing.Size = Vector3.new(0.3, 3 * wingScale, 2 * wingScale)
-    rightWing.Material = Enum.Material.ForceField
-    rightWing.Color = wingColor
-    rightWing.Transparency = 0.25
-    rightWing.CanCollide = false
-    rightWing.Massless = true
+        -- Main wing bone (structural, hidden behind feathers)
+        local bone = Instance.new("Part")
+        bone.Name = "WingBone_" .. sideName
+        bone.Size = Vector3.new(0.2, 0.4 * wingScale, 2.5 * wingScale)
+        bone.Material = Enum.Material.SmoothPlastic
+        bone.Color = wingColor
+        bone.Transparency = 1
+        bone.CanCollide = false
+        bone.Massless = true
+        bone.CFrame = torso.CFrame * CFrame.new(sideSign * 0.8, 0.5, 0.4) * CFrame.Angles(0, 0, math.rad(sideSign * -20))
+        bone.Parent = wingModel
 
-    local rightWeld = Instance.new("WeldConstraint")
-    rightWeld.Part0 = torso
-    rightWeld.Part1 = rightWing
-    rightWeld.Parent = rightWing
+        local boneWeld = Instance.new("WeldConstraint")
+        boneWeld.Part0 = torso
+        boneWeld.Part1 = bone
+        boneWeld.Parent = bone
 
-    rightWing.CFrame = torso.CFrame * CFrame.new(1.5 * wingScale, 0.5, 0.8) * CFrame.Angles(0, 0, math.rad(25))
-    rightWing.Parent = character
+        -- Primary feathers (5 long feathers fanning out)
+        local featherCount = 5 + math.min(levelIndex, 3)
+        for f = 1, featherCount do
+            local t = f / featherCount
+            local featherLength = (1.8 + t * 1.2) * wingScale
+            local featherWidth = (0.35 - t * 0.1) * wingScale
+            local spreadAngle = -10 + t * 50
 
-    -- Wing glow (brighter with forge upgrades)
+            local feather = Instance.new("Part")
+            feather.Name = "Feather_" .. sideName .. "_" .. f
+            feather.Size = Vector3.new(featherWidth, 0.08 * wingScale, featherLength)
+            feather.Material = Enum.Material.SmoothPlastic
+            feather.Color = t > 0.7 and tipColor or wingColor
+            feather.Transparency = 0
+            feather.CanCollide = false
+            feather.Massless = true
+
+            -- Fan feathers out from the wing bone
+            local featherAngle = math.rad(sideSign * spreadAngle)
+            local yOffset = 0.5 - t * 0.8
+            feather.CFrame = bone.CFrame
+                * CFrame.new(0, yOffset * wingScale, -t * 1.5 * wingScale)
+                * CFrame.Angles(math.rad(-10 + t * 15), featherAngle, math.rad(sideSign * (-25 + t * 5)))
+            feather.Parent = wingModel
+
+            local featherWeld = Instance.new("WeldConstraint")
+            featherWeld.Part0 = bone
+            featherWeld.Part1 = feather
+            featherWeld.Parent = feather
+        end
+
+        -- Secondary feathers (shorter, overlapping layer for fullness)
+        for f = 1, 4 do
+            local t = f / 4
+            local secLength = (1.0 + t * 0.6) * wingScale
+            local secWidth = 0.4 * wingScale
+
+            local sec = Instance.new("Part")
+            sec.Name = "SecFeather_" .. sideName .. "_" .. f
+            sec.Size = Vector3.new(secWidth, 0.06 * wingScale, secLength)
+            sec.Material = Enum.Material.SmoothPlastic
+            sec.Color = wingColor
+            sec.Transparency = 0
+            sec.CanCollide = false
+            sec.Massless = true
+
+            sec.CFrame = bone.CFrame
+                * CFrame.new(0, (0.3 - t * 0.4) * wingScale, (-t * 0.8) * wingScale)
+                * CFrame.Angles(math.rad(-5 + t * 8), math.rad(sideSign * (-5 + t * 25)), math.rad(sideSign * -20))
+            sec.Parent = wingModel
+
+            local secWeld = Instance.new("WeldConstraint")
+            secWeld.Part0 = bone
+            secWeld.Part1 = sec
+            secWeld.Parent = sec
+        end
+
+        -- Covert feathers (small fluffy ones near the body)
+        for f = 1, 3 do
+            local t = f / 3
+            local covLength = 0.6 * wingScale
+            local covWidth = 0.3 * wingScale
+
+            local cov = Instance.new("Part")
+            cov.Name = "CovertFeather_" .. sideName .. "_" .. f
+            cov.Size = Vector3.new(covWidth, 0.05 * wingScale, covLength)
+            cov.Material = Enum.Material.SmoothPlastic
+            cov.Color = wingColor
+            cov.Transparency = 0
+            cov.CanCollide = false
+            cov.Massless = true
+
+            cov.CFrame = bone.CFrame
+                * CFrame.new(0, (0.4 - t * 0.3) * wingScale, 0.2 * wingScale)
+                * CFrame.Angles(math.rad(5), math.rad(sideSign * t * 15), math.rad(sideSign * -15))
+            cov.Parent = wingModel
+
+            local covWeld = Instance.new("WeldConstraint")
+            covWeld.Part0 = bone
+            covWeld.Part1 = cov
+            covWeld.Parent = cov
+        end
+    end
+
+    -- Subtle wing glow (not blinding — just a soft aura)
     local wingLight = Instance.new("PointLight")
+    wingLight.Name = "WingGlow"
     wingLight.Color = wingColor
-    wingLight.Brightness = 1 + levelIndex * 0.5 + wingLevel * 0.3
-    wingLight.Range = 8 + levelIndex * 3 + wingLevel * 2
-    wingLight.Parent = leftWing
+    wingLight.Brightness = 0.3 + levelIndex * 0.1
+    wingLight.Range = 6 + levelIndex * 1.5
+    wingLight.Parent = wingModel:FindFirstChild("WingBone_L")
+
+    wingModel.Parent = character
 end
 
 -- WING FORGE — spend motes to upgrade your wings

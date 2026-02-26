@@ -69,6 +69,8 @@ if ProfileStoreAvailable then
             dailyStreak = 0,
             lastDailyClaimTime = 0,
             mailSentCount = 0,
+            brainrotsDelivered = 0,
+            baseLevel = 1,
         })
     end)
     if storeOk then
@@ -129,6 +131,8 @@ local DEFAULT_DATA = {
     dailyStreak = 0,
     lastDailyClaimTime = 0,
     mailSentCount = 0,
+    brainrotsDelivered = 0,
+    baseLevel = 1,
 }
 
 function DataManager.GetDefaultData(): { [string]: any }

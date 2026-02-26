@@ -139,6 +139,37 @@ function ClientController.Init()
     local LayerIndicatorUI = require(script.Parent.LayerIndicatorUI)
     LayerIndicatorUI.Init()
 
+    -- Mobile touch controls (only shows on phones/tablets)
+    local MobileInputUI = require(script.Parent.MobileInputUI)
+    MobileInputUI.OnFlightToggle = function()
+        ClientController.ToggleFlight()
+    end
+    MobileInputUI.OnGlideStart = function()
+        local character = player.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Freefall and not isFlying then
+                ClientController.StartGlide()
+            end
+        end
+    end
+    MobileInputUI.OnGlideEnd = function()
+        if isGliding then
+            ClientController.StopGlide()
+        end
+    end
+    MobileInputUI.OnDescendStart = function()
+        gamepadFlyDown = true  -- reuse gamepad flag for mobile descend
+    end
+    MobileInputUI.OnDescendEnd = function()
+        gamepadFlyDown = false
+    end
+    MobileInputUI.Init()
+
+    -- Brainrot carry HUD
+    local BrainrotUI = require(script.Parent.BrainrotUI)
+    BrainrotUI.Init()
+
     print("[ClientController] Angel Cloud client initialized")
 end
 
@@ -381,71 +412,58 @@ function ClientController.HandleAction()
 end
 
 function ClientController.ShowWings(active: boolean)
-    -- Server already creates wings — just make them glow brighter when flying/gliding
+    -- Wings are now a Model called "AngelWings" with multiple feather parts
     local character = player.Character
     if not character then return end
 
-    local leftWing = character:FindFirstChild("AngelWings")
-    local rightWing = character:FindFirstChild("AngelWingR")
+    local wingModel = character:FindFirstChild("AngelWings")
+    if not wingModel or not wingModel:IsA("Model") then return end
 
-    if leftWing then
-        leftWing.Transparency = active and 0.1 or 0.25
-    end
-    if rightWing then
-        rightWing.Transparency = active and 0.1 or 0.25
-    end
-
-    -- Add/remove glow effects on server-created wings
-    if active and leftWing then
-        -- Add particle sparkles + light if not already present
-        if not leftWing:FindFirstChild("WingSparkle") then
-            local wingColor = leftWing.Color
-
-            -- Point light (wing glow visible to others)
-            local wingLight = Instance.new("PointLight")
-            wingLight.Name = "WingLight"
-            wingLight.Color = wingColor
-            wingLight.Brightness = 1.5 + currentLayer * 0.3
-            wingLight.Range = 12 + currentLayer * 2
-            wingLight.Parent = leftWing
-
-            -- Particle trail (feather sparkles)
-            local sparkle = Instance.new("ParticleEmitter")
-            sparkle.Name = "WingSparkle"
-            sparkle.Color = ColorSequence.new({
-                ColorSequenceKeypoint.new(0, wingColor),
-                ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255)),
-            })
-            sparkle.Size = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.3),
-                NumberSequenceKeypoint.new(1, 0),
-            })
-            sparkle.Transparency = NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.3),
-                NumberSequenceKeypoint.new(1, 1),
-            })
-            sparkle.Lifetime = NumberRange.new(0.5, 1.5)
-            sparkle.Rate = 8 + currentLayer * 2
-            sparkle.Speed = NumberRange.new(1, 3)
-            sparkle.SpreadAngle = Vector2.new(180, 90)
-            sparkle.LightEmission = 1
-            sparkle.Parent = leftWing
-
-            -- Same for right wing
-            if rightWing then
-                local rLight = wingLight:Clone()
-                rLight.Parent = rightWing
-                local rSparkle = sparkle:Clone()
-                rSparkle.Parent = rightWing
+    -- When flying/gliding: spread wings wider and add subtle glow
+    for _, part in ipairs(wingModel:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name ~= "WingBone_L" and part.Name ~= "WingBone_R" then
+            -- Feathers become slightly more visible when active
+            if string.find(part.Name, "Feather") then
+                part.Transparency = active and 0 or 0
             end
         end
-    elseif not active then
-        -- Remove glow effects when landing
-        for _, wing in ipairs({leftWing, rightWing}) do
-            if wing then
-                local light = wing:FindFirstChild("WingLight")
-                if light then light:Destroy() end
-                local sparkle = wing:FindFirstChild("WingSparkle")
+    end
+
+    -- Add/remove flight glow effect
+    local boneL = wingModel:FindFirstChild("WingBone_L")
+    local boneR = wingModel:FindFirstChild("WingBone_R")
+
+    if active then
+        -- Add soft sparkle trail from wing tips when flying
+        for _, bone in ipairs({boneL, boneR}) do
+            if bone and not bone:FindFirstChild("WingSparkle") then
+                local sparkle = Instance.new("ParticleEmitter")
+                sparkle.Name = "WingSparkle"
+                sparkle.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+                    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 220, 255)),
+                })
+                sparkle.Size = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.2),
+                    NumberSequenceKeypoint.new(1, 0),
+                })
+                sparkle.Transparency = NumberSequence.new({
+                    NumberSequenceKeypoint.new(0, 0.5),
+                    NumberSequenceKeypoint.new(1, 1),
+                })
+                sparkle.Lifetime = NumberRange.new(0.3, 0.8)
+                sparkle.Rate = 6
+                sparkle.Speed = NumberRange.new(0.5, 2)
+                sparkle.SpreadAngle = Vector2.new(60, 60)
+                sparkle.LightEmission = 0.5
+                sparkle.Parent = bone
+            end
+        end
+    else
+        -- Remove sparkles when landing
+        for _, bone in ipairs({boneL, boneR}) do
+            if bone then
+                local sparkle = bone:FindFirstChild("WingSparkle")
                 if sparkle then sparkle:Destroy() end
             end
         end

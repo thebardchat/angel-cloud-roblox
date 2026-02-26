@@ -12,9 +12,10 @@ local Layers = require(ReplicatedStorage.Config.Layers)
 
 local WorldGenerator = {}
 
--- Shared materials and properties
+-- Shared materials — toned down for visibility (Neon was blinding players)
 local CLOUD_MATERIAL = Enum.Material.SmoothPlastic
-local NEON_MATERIAL = Enum.Material.Neon
+local NEON_MATERIAL = Enum.Material.SmoothPlastic  -- accent parts: solid color, no eye-burn
+local GLOW_MATERIAL = Enum.Material.Neon            -- reserved for tiny accents only
 local GLASS_MATERIAL = Enum.Material.Glass
 local ICE_MATERIAL = Enum.Material.Glacier
 local FORCE_FIELD = Enum.Material.ForceField
@@ -84,6 +85,9 @@ function WorldGenerator.Init()
 
     -- Build the grand cloud stairway (visible from anywhere)
     WorldGenerator.BuildGrandStairway()
+
+    -- Build world boundary walls (so players can't fly into the void)
+    WorldGenerator.BuildWorldBoundaries()
 
     print("[WorldGenerator] World generation complete — all 6 layers built")
 end
@@ -2552,6 +2556,100 @@ function WorldGenerator.BuildGrandStairway()
     end
 
     print("[WorldGenerator] Built Grand Stairway: " .. totalSteps .. " cloud steps")
+end
+
+-- =========================================================================
+-- WORLD BOUNDARIES (invisible walls + cloud border so you can't fly to void)
+-- =========================================================================
+
+function WorldGenerator.BuildWorldBoundaries()
+    local boundaryFolder = Instance.new("Folder")
+    boundaryFolder.Name = "WorldBoundaries"
+    boundaryFolder.Parent = workspace
+
+    local WORLD_RADIUS = 300  -- max distance from center
+    local WORLD_HEIGHT_MIN = 40
+    local WORLD_HEIGHT_MAX = 2050
+    local WALL_THICKNESS = 10
+    local WALL_HEIGHT = WORLD_HEIGHT_MAX - WORLD_HEIGHT_MIN
+
+    -- 4 invisible walls (NSEW)
+    local wallConfigs = {
+        { pos = Vector3.new(WORLD_RADIUS, WORLD_HEIGHT_MIN + WALL_HEIGHT / 2, 0), size = Vector3.new(WALL_THICKNESS, WALL_HEIGHT, WORLD_RADIUS * 2) },
+        { pos = Vector3.new(-WORLD_RADIUS, WORLD_HEIGHT_MIN + WALL_HEIGHT / 2, 0), size = Vector3.new(WALL_THICKNESS, WALL_HEIGHT, WORLD_RADIUS * 2) },
+        { pos = Vector3.new(0, WORLD_HEIGHT_MIN + WALL_HEIGHT / 2, WORLD_RADIUS), size = Vector3.new(WORLD_RADIUS * 2, WALL_HEIGHT, WALL_THICKNESS) },
+        { pos = Vector3.new(0, WORLD_HEIGHT_MIN + WALL_HEIGHT / 2, -WORLD_RADIUS), size = Vector3.new(WORLD_RADIUS * 2, WALL_HEIGHT, WALL_THICKNESS) },
+    }
+
+    for i, config in ipairs(wallConfigs) do
+        local wall = Instance.new("Part")
+        wall.Name = "BoundaryWall_" .. i
+        wall.Size = config.size
+        wall.Position = config.pos
+        wall.Anchored = true
+        wall.CanCollide = true
+        wall.Transparency = 1  -- invisible
+        wall.Parent = boundaryFolder
+    end
+
+    -- Floor (prevent falling below the world)
+    local floor = Instance.new("Part")
+    floor.Name = "BoundaryFloor"
+    floor.Size = Vector3.new(WORLD_RADIUS * 2, 5, WORLD_RADIUS * 2)
+    floor.Position = Vector3.new(0, WORLD_HEIGHT_MIN - 5, 0)
+    floor.Anchored = true
+    floor.CanCollide = true
+    floor.Transparency = 1
+    floor.Parent = boundaryFolder
+
+    -- Ceiling
+    local ceiling = Instance.new("Part")
+    ceiling.Name = "BoundaryCeiling"
+    ceiling.Size = Vector3.new(WORLD_RADIUS * 2, 5, WORLD_RADIUS * 2)
+    ceiling.Position = Vector3.new(0, WORLD_HEIGHT_MAX, 0)
+    ceiling.Anchored = true
+    ceiling.CanCollide = true
+    ceiling.Transparency = 1
+    ceiling.Parent = boundaryFolder
+
+    -- Visible cloud border (soft cloud wall effect around the edges)
+    for side = 1, 4 do
+        local angle = (side / 4) * math.pi * 2
+        for i = 1, 8 do
+            local offsetAngle = (i / 8) * math.pi * 2
+            local y = WORLD_HEIGHT_MIN + (WALL_HEIGHT / 8) * i
+
+            local cloudWall = Instance.new("Part")
+            cloudWall.Name = "BorderCloud"
+            cloudWall.Shape = Enum.PartType.Ball
+            cloudWall.Size = Vector3.new(60, 30, 60)
+            cloudWall.Anchored = true
+            cloudWall.CanCollide = false
+            cloudWall.Material = Enum.Material.SmoothPlastic
+            cloudWall.Color = Color3.fromRGB(230, 225, 245)
+            cloudWall.Transparency = 0.4
+
+            local wallX, wallZ
+            if side == 1 then
+                wallX = WORLD_RADIUS - 20
+                wallZ = (i - 4.5) * 70
+            elseif side == 2 then
+                wallX = -WORLD_RADIUS + 20
+                wallZ = (i - 4.5) * 70
+            elseif side == 3 then
+                wallX = (i - 4.5) * 70
+                wallZ = WORLD_RADIUS - 20
+            else
+                wallX = (i - 4.5) * 70
+                wallZ = -WORLD_RADIUS + 20
+            end
+
+            cloudWall.Position = Vector3.new(wallX, y, wallZ)
+            cloudWall.Parent = boundaryFolder
+        end
+    end
+
+    print("[WorldGenerator] Built world boundaries (300 stud radius, cloud walls)")
 end
 
 return WorldGenerator
