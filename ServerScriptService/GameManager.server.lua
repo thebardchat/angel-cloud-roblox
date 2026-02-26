@@ -395,6 +395,14 @@ function GameManager.AttachWings(character: Model, data: { [string]: any })
     }
     local tipColor = WING_TIPS[levelIndex] or Color3.fromRGB(220, 225, 240)
 
+    -- Tint the base color slightly so wings are visible against white clouds
+    -- Mix in a touch of blue-gold to break pure-white monotony
+    local tintedColor = Color3.new(
+        wingColor.R * 0.92 + 0.03,
+        wingColor.G * 0.93 + 0.02,
+        wingColor.B * 0.90 + 0.08
+    )
+
     -- Build real feathered wings from multiple parts
     local wingModel = Instance.new("Model")
     wingModel.Name = "AngelWings"
@@ -403,16 +411,19 @@ function GameManager.AttachWings(character: Model, data: { [string]: any })
         local sideName = side == -1 and "L" or "R"
         local sideSign = side
 
-        -- Main wing bone (structural, hidden behind feathers)
+        -- Wing bone (structural, hidden) — positioned well out from body
         local bone = Instance.new("Part")
         bone.Name = "WingBone_" .. sideName
-        bone.Size = Vector3.new(0.2, 0.4 * wingScale, 2.5 * wingScale)
+        bone.Size = Vector3.new(0.3, 0.5 * wingScale, 4.0 * wingScale)
         bone.Material = Enum.Material.SmoothPlastic
-        bone.Color = wingColor
+        bone.Color = tintedColor
         bone.Transparency = 1
         bone.CanCollide = false
         bone.Massless = true
-        bone.CFrame = torso.CFrame * CFrame.new(sideSign * 0.8, 0.5, 0.4) * CFrame.Angles(0, 0, math.rad(sideSign * -20))
+        -- 1.5 studs out, 0.3 up, 0.6 back. Angled outward at 35 degrees.
+        bone.CFrame = torso.CFrame
+            * CFrame.new(sideSign * 1.5, 0.3, 0.6)
+            * CFrame.Angles(0, 0, math.rad(sideSign * -35))
         bone.Parent = wingModel
 
         local boneWeld = Instance.new("WeldConstraint")
@@ -420,29 +431,36 @@ function GameManager.AttachWings(character: Model, data: { [string]: any })
         boneWeld.Part1 = bone
         boneWeld.Parent = bone
 
-        -- Primary feathers (5 long feathers fanning out)
-        local featherCount = 5 + math.min(levelIndex, 3)
-        for f = 1, featherCount do
-            local t = f / featherCount
-            local featherLength = (1.8 + t * 1.2) * wingScale
-            local featherWidth = (0.35 - t * 0.1) * wingScale
-            local spreadAngle = -10 + t * 50
+        -- PRIMARY FEATHERS: 6-8 long feathers fanning 10-70 degrees
+        local primaryCount = 6 + math.min(levelIndex, 2) -- 6 at level 1, up to 8
+        for f = 1, primaryCount do
+            local t = f / primaryCount
+            local featherLength = (3.0 + t * 2.0) * wingScale  -- 3-5 studs
+            local featherWidth = (0.9 - t * 0.2) * wingScale   -- 0.9 down to 0.7
+            local featherThick = 0.2 * wingScale                -- 0.2 studs thick
+            local spreadAngle = 10 + t * 60                     -- 10 to 70 degrees
+
+            local isOuterTip = (f >= primaryCount - 1)          -- last 2 feathers
 
             local feather = Instance.new("Part")
             feather.Name = "Feather_" .. sideName .. "_" .. f
-            feather.Size = Vector3.new(featherWidth, 0.08 * wingScale, featherLength)
-            feather.Material = Enum.Material.SmoothPlastic
-            feather.Color = t > 0.7 and tipColor or wingColor
+            feather.Size = Vector3.new(featherWidth, featherThick, featherLength)
+            feather.Material = isOuterTip and Enum.Material.Neon or Enum.Material.SmoothPlastic
+            feather.Color = isOuterTip and tipColor or tintedColor
             feather.Transparency = 0
             feather.CanCollide = false
             feather.Massless = true
 
-            -- Fan feathers out from the wing bone
+            -- Fan feathers outward from the bone in a wide arc
             local featherAngle = math.rad(sideSign * spreadAngle)
-            local yOffset = 0.5 - t * 0.8
+            local yOffset = 0.3 - t * 0.6
             feather.CFrame = bone.CFrame
-                * CFrame.new(0, yOffset * wingScale, -t * 1.5 * wingScale)
-                * CFrame.Angles(math.rad(-10 + t * 15), featherAngle, math.rad(sideSign * (-25 + t * 5)))
+                * CFrame.new(0, yOffset * wingScale, -t * 2.5 * wingScale)
+                * CFrame.Angles(
+                    math.rad(-8 + t * 12),
+                    featherAngle,
+                    math.rad(sideSign * (-20 + t * 8))
+                )
             feather.Parent = wingModel
 
             local featherWeld = Instance.new("WeldConstraint")
@@ -451,24 +469,29 @@ function GameManager.AttachWings(character: Model, data: { [string]: any })
             featherWeld.Parent = feather
         end
 
-        -- Secondary feathers (shorter, overlapping layer for fullness)
+        -- SECONDARY FEATHERS: 4 medium feathers overlapping with primaries
         for f = 1, 4 do
             local t = f / 4
-            local secLength = (1.0 + t * 0.6) * wingScale
-            local secWidth = 0.4 * wingScale
+            local secLength = (2.0 + t * 1.0) * wingScale  -- 2-3 studs
+            local secWidth = 0.7 * wingScale
+            local secThick = 0.2 * wingScale
 
             local sec = Instance.new("Part")
             sec.Name = "SecFeather_" .. sideName .. "_" .. f
-            sec.Size = Vector3.new(secWidth, 0.06 * wingScale, secLength)
+            sec.Size = Vector3.new(secWidth, secThick, secLength)
             sec.Material = Enum.Material.SmoothPlastic
-            sec.Color = wingColor
+            sec.Color = tintedColor
             sec.Transparency = 0
             sec.CanCollide = false
             sec.Massless = true
 
             sec.CFrame = bone.CFrame
-                * CFrame.new(0, (0.3 - t * 0.4) * wingScale, (-t * 0.8) * wingScale)
-                * CFrame.Angles(math.rad(-5 + t * 8), math.rad(sideSign * (-5 + t * 25)), math.rad(sideSign * -20))
+                * CFrame.new(0, (0.2 - t * 0.3) * wingScale, (-t * 1.2) * wingScale)
+                * CFrame.Angles(
+                    math.rad(-4 + t * 6),
+                    math.rad(sideSign * (5 + t * 20)),
+                    math.rad(sideSign * -18)
+                )
             sec.Parent = wingModel
 
             local secWeld = Instance.new("WeldConstraint")
@@ -477,24 +500,29 @@ function GameManager.AttachWings(character: Model, data: { [string]: any })
             secWeld.Parent = sec
         end
 
-        -- Covert feathers (small fluffy ones near the body)
+        -- COVERT FEATHERS: 3 short wide feathers at wing root for fullness
         for f = 1, 3 do
             local t = f / 3
-            local covLength = 0.6 * wingScale
-            local covWidth = 0.3 * wingScale
+            local covLength = (1.0 + t * 0.5) * wingScale  -- 1-1.5 studs
+            local covWidth = 0.8 * wingScale
+            local covThick = 0.2 * wingScale
 
             local cov = Instance.new("Part")
             cov.Name = "CovertFeather_" .. sideName .. "_" .. f
-            cov.Size = Vector3.new(covWidth, 0.05 * wingScale, covLength)
+            cov.Size = Vector3.new(covWidth, covThick, covLength)
             cov.Material = Enum.Material.SmoothPlastic
-            cov.Color = wingColor
+            cov.Color = tintedColor
             cov.Transparency = 0
             cov.CanCollide = false
             cov.Massless = true
 
             cov.CFrame = bone.CFrame
-                * CFrame.new(0, (0.4 - t * 0.3) * wingScale, 0.2 * wingScale)
-                * CFrame.Angles(math.rad(5), math.rad(sideSign * t * 15), math.rad(sideSign * -15))
+                * CFrame.new(0, (0.35 - t * 0.25) * wingScale, 0.3 * wingScale)
+                * CFrame.Angles(
+                    math.rad(4),
+                    math.rad(sideSign * t * 15),
+                    math.rad(sideSign * -12)
+                )
             cov.Parent = wingModel
 
             local covWeld = Instance.new("WeldConstraint")

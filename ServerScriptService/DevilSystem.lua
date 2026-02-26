@@ -82,104 +82,151 @@ function DevilSystem.SpawnDevil(layerIndex: number, index: number)
     local centerY = (heightMin + heightMax) / 2
     local color = DEVIL_COLORS[layerIndex] or Color3.fromRGB(150, 30, 30)
 
-    -- Build devil model from parts (menacing but kid-friendly — more mischievous imp than horror)
+    -- Derived colors
+    local darkerColor = Color3.fromRGB(
+        math.max(0, math.floor(color.R * 255 * 0.7)),
+        math.max(0, math.floor(color.G * 255 * 0.7)),
+        math.max(0, math.floor(color.B * 255 * 0.7))
+    )
+    local armColor = Color3.fromRGB(
+        math.max(0, math.floor(color.R * 255 * 0.85)),
+        math.max(0, math.floor(color.G * 255 * 0.85)),
+        math.max(0, math.floor(color.B * 255 * 0.85))
+    )
+    local hornColor = Color3.fromRGB(30, 8, 8)
+    local wingColor = Color3.fromRGB(40, 12, 50)
+    local clawColor = Color3.fromRGB(25, 5, 5)
+
+    -- Helper: create a child part welded to a parent part at a relative CFrame
+    local function makeChild(parentPart, name: string, shape, size: Vector3, mat, col, relativeCF: CFrame)
+        local part = Instance.new("Part")
+        part.Name = name
+        if shape then
+            part.Shape = shape
+        end
+        part.Size = size
+        part.Material = mat
+        part.Color = col
+        part.CanCollide = false
+        part.Massless = true
+        -- NOT Anchored (defaults to false) so WeldConstraint moves it with parent
+        part.CFrame = parentPart.CFrame * relativeCF
+        part.Parent = parentPart.Parent -- same model
+
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = part
+        weld.Parent = part
+
+        return part
+    end
+
+    -- Helper: create a WedgePart child welded to a parent part
+    local function makeWedgeChild(parentPart, name: string, size: Vector3, mat, col, relativeCF: CFrame)
+        local wedge = Instance.new("WedgePart")
+        wedge.Name = name
+        wedge.Size = size
+        wedge.Material = mat
+        wedge.Color = col
+        wedge.CanCollide = false
+        wedge.Massless = true
+        wedge.CFrame = parentPart.CFrame * relativeCF
+        wedge.Parent = parentPart.Parent
+
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = parentPart
+        weld.Part1 = wedge
+        weld.Parent = wedge
+
+        return wedge
+    end
+
+    -- Build devil model (~7 studs tall flying imp)
     local model = Instance.new("Model")
     model.Name = "Devil_L" .. layerIndex .. "_" .. index
 
-    -- Body (round, imp-like)
+    -- Body / Torso (root part, Anchored)
     local body = Instance.new("Part")
     body.Name = "DevilBody"
-    body.Shape = Enum.PartType.Ball
-    body.Size = Vector3.new(4, 4, 4)
+    body.Size = Vector3.new(2.5, 3, 1.5)
     body.Material = Enum.Material.SmoothPlastic
     body.Color = color
     body.Anchored = true
     body.CanCollide = false
     body.Parent = model
 
-    -- Eyes (two glowing yellow orbs)
+    -- Head (ball on top of body, welded to body)
+    local head = makeChild(body, "Head", Enum.PartType.Ball,
+        Vector3.new(2.2, 2.2, 2.2), Enum.Material.SmoothPlastic, darkerColor,
+        CFrame.new(0, 2.6, 0))
+
+    -- Eyes (two neon yellow balls on front of head, welded to head)
     for side = -1, 1, 2 do
-        local eye = Instance.new("Part")
-        eye.Name = "Eye"
-        eye.Shape = Enum.PartType.Ball
-        eye.Size = Vector3.new(0.8, 0.8, 0.8)
-        eye.Material = Enum.Material.Neon
-        eye.Color = Color3.fromRGB(255, 200, 0)
-        eye.Anchored = true
-        eye.CanCollide = false
-        eye.Parent = model
-
-        local eyeWeld = Instance.new("WeldConstraint")
-        eyeWeld.Part0 = body
-        eyeWeld.Part1 = eye
-        eyeWeld.Parent = eye
-
-        eye.CFrame = body.CFrame * CFrame.new(side * 0.8, 0.5, -1.5)
+        makeChild(head, "Eye", Enum.PartType.Ball,
+            Vector3.new(0.5, 0.5, 0.5), Enum.Material.Neon, Color3.fromRGB(255, 200, 0),
+            CFrame.new(side * 0.45, 0.15, -0.85))
     end
 
-    -- Horns (two small angled parts)
+    -- Horns (two cylinders angled outward from head, welded to head)
     for side = -1, 1, 2 do
-        local horn = Instance.new("Part")
-        horn.Name = "Horn"
-        horn.Size = Vector3.new(0.5, 1.5, 0.5)
-        horn.Material = Enum.Material.SmoothPlastic
-        horn.Color = Color3.fromRGB(40, 10, 10)
-        horn.Anchored = true
-        horn.CanCollide = false
-        horn.Parent = model
-
-        local hornWeld = Instance.new("WeldConstraint")
-        hornWeld.Part0 = body
-        hornWeld.Part1 = horn
-        hornWeld.Parent = horn
-
-        horn.CFrame = body.CFrame * CFrame.new(side * 1, 2, 0) * CFrame.Angles(0, 0, math.rad(side * 20))
+        makeChild(head, "Horn", Enum.PartType.Cylinder,
+            Vector3.new(2, 0.4, 0.4), Enum.Material.SmoothPlastic, hornColor,
+            CFrame.new(side * 0.6, 1.2, -0.1)
+                * CFrame.Angles(0, 0, math.rad(side * 70))
+                * CFrame.Angles(math.rad(-15), 0, 0))
     end
 
-    -- Bat wings (dark, angular)
+    -- Arms (two blocks hanging from body sides, welded to body)
+    local leftArm, rightArm
     for side = -1, 1, 2 do
-        local wing = Instance.new("Part")
-        wing.Name = "BatWing"
-        wing.Size = Vector3.new(0.2, 2.5, 3)
-        wing.Material = Enum.Material.SmoothPlastic
-        wing.Color = Color3.fromRGB(30, 10, 30)
-        wing.Anchored = true
-        wing.CanCollide = false
-        wing.Parent = model
+        local arm = makeChild(body, "Arm", nil,
+            Vector3.new(0.7, 2.5, 0.7), Enum.Material.SmoothPlastic, armColor,
+            CFrame.new(side * 1.6, -0.25, 0))
+        if side == -1 then leftArm = arm else rightArm = arm end
 
-        local wingWeld = Instance.new("WeldConstraint")
-        wingWeld.Part0 = body
-        wingWeld.Part1 = wing
-        wingWeld.Parent = wing
-
-        wing.CFrame = body.CFrame * CFrame.new(side * 2.5, 0.5, 0.5) * CFrame.Angles(0, 0, math.rad(side * -30))
+        -- Claw at end of arm (wedge part, welded to arm)
+        makeWedgeChild(arm, "Claw",
+            Vector3.new(0.7, 0.6, 0.9), Enum.Material.SmoothPlastic, clawColor,
+            CFrame.new(0, -1.55, -0.1) * CFrame.Angles(0, 0, 0))
     end
 
-    -- Tail (thin wavy part)
-    local tail = Instance.new("Part")
-    tail.Name = "Tail"
-    tail.Size = Vector3.new(0.3, 0.3, 2.5)
-    tail.Material = Enum.Material.SmoothPlastic
-    tail.Color = color
-    tail.Anchored = true
-    tail.CanCollide = false
-    tail.Parent = model
+    -- Bat Wings (two large parts per side + wedge tips, welded to body)
+    for side = -1, 1, 2 do
+        -- Main wing membrane
+        local wing = makeChild(body, "BatWing", nil,
+            Vector3.new(0.15, 4, 5), Enum.Material.SmoothPlastic, wingColor,
+            CFrame.new(side * 3, 0.5, 1)
+                * CFrame.Angles(math.rad(-10), math.rad(side * -15), math.rad(side * -20)))
 
-    local tailWeld = Instance.new("WeldConstraint")
-    tailWeld.Part0 = body
-    tailWeld.Part1 = tail
-    tailWeld.Parent = tail
+        -- Wing tip (pointed wedge at outer edge)
+        makeWedgeChild(wing, "WingTip",
+            Vector3.new(0.15, 1.5, 2.5), Enum.Material.SmoothPlastic, wingColor,
+            CFrame.new(0, -2.75, -1.25) * CFrame.Angles(math.rad(10), 0, 0))
+    end
 
-    tail.CFrame = body.CFrame * CFrame.new(0, -0.5, 2.5)
+    -- Tail (cylinder extending backward from lower body, welded to body)
+    local tail = makeChild(body, "Tail", Enum.PartType.Cylinder,
+        Vector3.new(3.5, 0.3, 0.3), Enum.Material.SmoothPlastic, color,
+        CFrame.new(0, -1.2, 2.2)
+            * CFrame.Angles(0, 0, math.rad(90))
+            * CFrame.Angles(math.rad(25), 0, 0))
 
-    -- Evil glow (subtle red light)
+    -- Tail fork (two small wedges at end of tail for forked tip, welded to tail)
+    for side = -1, 1, 2 do
+        makeWedgeChild(tail, "TailFork",
+            Vector3.new(0.5, 0.6, 0.3), Enum.Material.SmoothPlastic, clawColor,
+            CFrame.new(side * 0.25, -1.75, 0)
+                * CFrame.Angles(0, 0, math.rad(side * 25)))
+    end
+
+    -- PointLight: red glow on body
     local glow = Instance.new("PointLight")
     glow.Color = Color3.fromRGB(255, 50, 50)
-    glow.Brightness = 0.8
-    glow.Range = 15
+    glow.Brightness = 1.5
+    glow.Range = 20
     glow.Parent = body
 
-    -- Smoke trail
+    -- Smoke ParticleEmitter: dark purple smoke trail on body
     local smoke = Instance.new("ParticleEmitter")
     smoke.Name = "DevilSmoke"
     smoke.Color = ColorSequence.new(Color3.fromRGB(60, 20, 60))
@@ -197,6 +244,29 @@ function DevilSystem.SpawnDevil(layerIndex: number, index: number)
     smoke.SpreadAngle = Vector2.new(30, 30)
     smoke.Parent = body
 
+    -- Fire ParticleEmitter: small orange/red fire from head (mouth area)
+    local fire = Instance.new("ParticleEmitter")
+    fire.Name = "DevilFire"
+    fire.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 160, 20)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 40, 10)),
+    })
+    fire.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(0.5, 0.6),
+        NumberSequenceKeypoint.new(1, 0),
+    })
+    fire.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 1),
+    })
+    fire.Lifetime = NumberRange.new(0.2, 0.5)
+    fire.Rate = 12
+    fire.Speed = NumberRange.new(2, 4)
+    fire.SpreadAngle = Vector2.new(15, 10)
+    fire.EmissionDirection = Enum.NormalId.Front
+    fire.Parent = head
+
     model.PrimaryPart = body
 
     -- Starting position
@@ -206,13 +276,6 @@ function DevilSystem.SpawnDevil(layerIndex: number, index: number)
         centerY,
         math.sin(startAngle) * DEVIL_PATROL_RADIUS * 0.5
     )
-
-    -- Update weld positions
-    for _, part in ipairs(model:GetDescendants()) do
-        if part:IsA("WeldConstraint") then
-            -- Welds auto-resolve from initial CFrame
-        end
-    end
 
     local layerFolderName = "Layer" .. layerIndex .. "_" .. layerDef.name:gsub("The ", ""):gsub("%s+", "")
     local layerFolder = workspace:FindFirstChild(layerFolderName)

@@ -86,12 +86,13 @@ function BrainrotSystem.SpawnBrainrot(layerIndex: number, index: number)
     local heightMax = layerDef.heightRange.max
     local spread = 140 + layerIndex * 15
 
-    -- The brainrot collectible — a glowing brain-shaped orb (fun, not gross)
+    -- The brainrot collectible — a glowing Neon orb, highly visible
     local brainrot = Instance.new("Part")
     brainrot.Name = "Brainrot_L" .. layerIndex .. "_" .. index
     brainrot.Shape = Enum.PartType.Ball
-    brainrot.Size = Vector3.new(2.5, 2.5, 2.5)
-    brainrot.Material = Enum.Material.SmoothPlastic
+    brainrot.Size = Vector3.new(4, 4, 4)
+    brainrot.Material = Enum.Material.Neon
+    brainrot.Transparency = 0.1
     brainrot.Anchored = true
     brainrot.CanCollide = false
 
@@ -113,47 +114,76 @@ function BrainrotSystem.SpawnBrainrot(layerIndex: number, index: number)
     )
     brainrot.Position = pos
 
-    -- Swirl pattern on the brainrot (brain texture effect with decal)
-    local swirlPart = Instance.new("Part")
-    swirlPart.Name = "BrainrotSwirl"
-    swirlPart.Shape = Enum.PartType.Ball
-    swirlPart.Size = Vector3.new(2.8, 2.8, 2.8)
-    swirlPart.Material = Enum.Material.Glass
-    swirlPart.Color = Color3.fromRGB(255, 255, 255)
-    swirlPart.Transparency = 0.6
-    swirlPart.Anchored = true
-    swirlPart.CanCollide = false
-    swirlPart.Position = pos
-    swirlPart.Parent = brainrot
-
-    local swirlWeld = Instance.new("WeldConstraint")
-    swirlWeld.Part0 = brainrot
-    swirlWeld.Part1 = swirlPart
-    swirlWeld.Parent = swirlPart
-
-    -- Soft glow
+    -- Bright PointLight for glow visibility
     local glow = Instance.new("PointLight")
     glow.Color = brainrot.Color
-    glow.Brightness = 0.8
-    glow.Range = 12
+    glow.Brightness = 2
+    glow.Range = 20
     glow.Parent = brainrot
 
-    -- Floating particles
+    -- Beam column — vertical light pillar so players can spot brainrots from far away
+    local attach0 = Instance.new("Attachment")
+    attach0.Name = "BeamBase"
+    attach0.Position = Vector3.new(0, 0, 0)
+    attach0.Parent = brainrot
+
+    local attach1 = Instance.new("Attachment")
+    attach1.Name = "BeamTop"
+    attach1.Position = Vector3.new(0, 35, 0)
+    attach1.Parent = brainrot
+
+    local beam = Instance.new("Beam")
+    beam.Name = "BeamColumn"
+    beam.Attachment0 = attach0
+    beam.Attachment1 = attach1
+    beam.Color = ColorSequence.new(brainrot.Color)
+    beam.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 0.8),
+    })
+    beam.Width0 = 1.5
+    beam.Width1 = 0.3
+    beam.LightEmission = 1
+    beam.FaceCamera = true
+    beam.Parent = brainrot
+
+    -- BillboardGui — floating "BRAINROT" label visible from 80 studs
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "BrainrotLabel"
+    billboard.Size = UDim2.new(0, 120, 0, 40)
+    billboard.StudsOffset = Vector3.new(0, 5, 0)
+    billboard.MaxDistance = 80
+    billboard.AlwaysOnTop = false
+    billboard.Parent = brainrot
+
+    local label = Instance.new("TextLabel")
+    label.Name = "Label"
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = "BRAINROT"
+    label.TextColor3 = brainrot.Color
+    label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+    label.TextStrokeTransparency = 0.3
+    label.Font = Enum.Font.GothamBold
+    label.TextScaled = true
+    label.Parent = billboard
+
+    -- Floating particles — bigger and glowier
     local emitter = Instance.new("ParticleEmitter")
     emitter.Color = ColorSequence.new(brainrot.Color)
     emitter.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(0, 0.5),
         NumberSequenceKeypoint.new(1, 0),
     })
     emitter.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(0, 0.3),
         NumberSequenceKeypoint.new(1, 1),
     })
     emitter.Lifetime = NumberRange.new(1, 2)
-    emitter.Rate = 4
+    emitter.Rate = 8
     emitter.Speed = NumberRange.new(0.5, 2)
     emitter.SpreadAngle = Vector2.new(360, 360)
-    emitter.LightEmission = 0.5
+    emitter.LightEmission = 1
     emitter.Parent = brainrot
 
     -- Place in layer folder
@@ -204,12 +234,16 @@ function BrainrotSystem.Update(dt: number)
             if br.respawnTimer <= 0 then
                 br.active = true
                 if br.part then
-                    br.part.Transparency = 0
+                    br.part.Transparency = 0.1
                     br.part:SetAttribute("Active", true)
                     local glow = br.part:FindFirstChildWhichIsA("PointLight")
                     if glow then glow.Enabled = true end
                     local emitter = br.part:FindFirstChildWhichIsA("ParticleEmitter")
                     if emitter then emitter.Enabled = true end
+                    local beamObj = br.part:FindFirstChild("BeamColumn")
+                    if beamObj then beamObj.Enabled = true end
+                    local billboardObj = br.part:FindFirstChild("BrainrotLabel")
+                    if billboardObj then billboardObj.Enabled = true end
                 end
             end
             continue
@@ -256,6 +290,10 @@ function BrainrotSystem.CollectBrainrot(player: Player, brainrotData: any)
         if glow then glow.Enabled = false end
         local emitter = brainrotData.part:FindFirstChildWhichIsA("ParticleEmitter")
         if emitter then emitter.Enabled = false end
+        local beamObj = brainrotData.part:FindFirstChild("BeamColumn")
+        if beamObj then beamObj.Enabled = false end
+        local billboardObj = brainrotData.part:FindFirstChild("BrainrotLabel")
+        if billboardObj then billboardObj.Enabled = false end
     end
 
     -- Update carry count
