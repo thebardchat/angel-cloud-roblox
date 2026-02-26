@@ -469,18 +469,13 @@ function ClientController.Update(dt: number)
         local flightForce = humanoidRootPart:FindFirstChild("FlightForce")
         if flightForce then
             local moveDirection = humanoid.MoveDirection
-            local cameraLook = camera.CFrame.LookVector
-            local cameraRight = camera.CFrame.RightVector
 
             local velocity = Vector3.zero
 
             -- WASD moves you in camera direction (true 3D flight)
+            -- moveDirection is already world-space and camera-relative from Humanoid
             if moveDirection.Magnitude > 0 then
-                local flatLook = Vector3.new(cameraLook.X, 0, cameraLook.Z)
-                if flatLook.Magnitude > 0 then flatLook = flatLook.Unit end
-                local flatRight = Vector3.new(cameraRight.X, 0, cameraRight.Z)
-                if flatRight.Magnitude > 0 then flatRight = flatRight.Unit end
-                velocity = (flatLook * moveDirection.Z * -1 + flatRight * moveDirection.X) * -FLIGHT_SPEED
+                velocity = moveDirection.Unit * FLIGHT_SPEED
             end
 
             -- Space/RT/A = go UP, Shift/LT = go DOWN (keyboard + gamepad)
@@ -513,9 +508,9 @@ function ClientController.Update(dt: number)
     if isGliding and stamina > 0 then
         local moveDirection = humanoid.MoveDirection
         if moveDirection.Magnitude > 0 then
-            humanoidRootPart.Velocity = Vector3.new(
+            humanoidRootPart.AssemblyLinearVelocity = Vector3.new(
                 moveDirection.X * 30 * GLIDE_HORIZONTAL_BOOST,
-                humanoidRootPart.Velocity.Y,
+                humanoidRootPart.AssemblyLinearVelocity.Y,
                 moveDirection.Z * 30 * GLIDE_HORIZONTAL_BOOST
             )
         end
