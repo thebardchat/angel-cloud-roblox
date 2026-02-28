@@ -7,6 +7,7 @@ license = "MIT"
 description = "Angel Cloud ROBLOX — The Cloud Climb"
 
 [dependencies]
+Knit = "sleitnick/knit@1.6.0"
 Promise = "evaera/promise@4.0.0"
 Signal = "stravant/goodsignal@0.2.0"
 Trove = "sleitnick/trove@1.1.0"
@@ -17,5 +18,5 @@ Timer = "sleitnick/timer@1.1.0"
 TestEZ = "roblox/testez@0.4.1"
 
 [place]
-shared-packages = "ReplicatedStorage.Packages"
-server-packages = "ServerScriptService.Packages"
+shared-packages = "Packages"
+server-packages = "ServerPackages"

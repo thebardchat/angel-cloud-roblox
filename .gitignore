@@ -9,9 +9,18 @@
 # Wally packages (installed from registry, not committed)
 Packages/
 !Packages/.gitkeep
+!Packages/ProfileService.lua
 
-# Foreman binaries
+# Foreman / Aftman binaries
 ~/.foreman/
+~/.aftman/
+
+# Local tool binaries (downloaded via setup)
+tools/*.exe
+tools/*.zip
+
+# Wally dev packages
+DevPackages/
 
 # OS files
 .DS_Store
