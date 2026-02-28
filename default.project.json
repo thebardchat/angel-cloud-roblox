@@ -1,16 +1,11 @@
 {
-  "name": "AngelCloud_TheCloudClimb",
+  "name": "AngelCloudRoblox",
   "tree": {
     "$className": "DataModel",
 
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "$path": "ServerScriptService",
-
-      "Packages": {
-        "$className": "Folder",
-        "$path": "Packages/Server"
-      }
+      "$path": "src/server"
     },
 
     "StarterPlayer": {
@@ -18,27 +13,18 @@
 
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "$path": "StarterPlayerScripts"
+        "$path": "src/client"
       }
     },
 
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
+      "$path": "src/shared"
+    },
 
-      "Config": {
-        "$className": "Folder",
-        "$path": "ReplicatedStorage/Config"
-      },
-
-      "Shared": {
-        "$className": "Folder",
-        "$path": "ReplicatedStorage/Shared"
-      },
-
-      "Packages": {
-        "$className": "Folder",
-        "$path": "Packages"
-      }
+    "StarterGui": {
+      "$className": "StarterGui",
+      "$path": "src/starterGui"
     },
 
     "Workspace": {
@@ -65,10 +51,6 @@
       "Layer6_Empyrean": {
         "$className": "Folder"
       }
-    },
-
-    "StarterGui": {
-      "$className": "StarterGui"
     },
 
     "Lighting": {
