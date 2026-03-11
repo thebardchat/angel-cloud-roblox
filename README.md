@@ -1,6 +1,41 @@
-# 🌤️ Angel Cloud ROBLOX
+# 🎮 angel-cloud-roblox
 
-**A fun-first Roblox experience that gamifies mental wellness for kids and teens.**
+> Therapeutic Roblox game built on Luau, Rojo, and the Knit framework. Wing progression. Halo currency. Healing mechanics.
+
+This project operates under the [ShaneTheBrain Constitution](https://github.com/thebardchat/constitution/blob/main/CONSTITUTION.md).
+
+---
+
+## What It Is
+
+A Roblox game built as part of the Angel Cloud mental wellness platform. Players progress from "New Born" to "Angel" through therapeutic mechanics, earning Halo currency and unlocking wing progressions. Built to reach people — especially young people — where they already are.
+
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| Language | Luau |
+| Toolchain | Rojo |
+| Framework | Knit |
+| Data | ProfileService |
+| Platform | Roblox |
+
+## Design Pillars
+
+- Crisis-first AI detection mechanics
+- Halo trust metric system
+- Wing progression as visual mental wellness journey
+- ADHD-aware UI — clear next actions, no friction
+
+## Built With
+
+| Partner | Role |
+|---------|------|
+| **Claude by Anthropic** · [claude.ai](https://claude.ai) | Co-built every line |
+| **Raspberry Pi 5** · [raspberrypi.com](https://www.raspberrypi.com) | Local dev node |
+| **Pironman 5-MAX** · [pironman.com](https://www.pironman.com) | NVMe RAID 1 chassis |
+
+> *Part of the [ShaneBrain Ecosystem](https://github.com/thebardchat/constitution) · Hazel Green, Alabama*
 
 > _"Fun is the vehicle. Wellness is the destination."_
 
