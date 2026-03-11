@@ -1,5 +1,17 @@
 # Claude Code — Angel Cloud ROBLOX Migration Task
 
+## INFRASTRUCTURE
+
+All work happens on the Pi RAID:
+```
+/mnt/shanebrain-raid/shanebrain-core/angel-cloud-roblox/
+```
+
+SSH: `ssh shane@100.67.120.6`  
+Roblox Studio + `rojo serve` runs on **Pulsar0100** (Windows · `100.81.70.117`)
+
+---
+
 ## SITUATION
 
 The repo has two conflicting architectures:
@@ -77,6 +89,8 @@ src/
     Menus/
 ```
 
+---
+
 ## YOUR TASK (IN ORDER)
 
 ### Step 1: Create the `src/` structure
@@ -103,8 +117,8 @@ Create every folder and file listed in the NEW structure above. Use the CLAUDE.m
 
 ### Step 3: Move Config files
 - Copy `ReplicatedStorage/Config/*.lua` → `src/shared/Config/`
-- Add `Economy.lua` config (pull numbers from `docs/halo_economy.md`)
-- Add `Wings.lua` config (pull numbers from `docs/wing_progression.md`)
+- Add `Economy.lua` config (pull numbers from `assets/halo_economy.md`)
+- Add `Wings.lua` config (pull numbers from `assets/wing_progression.md`)
 
 ### Step 4: Update `default.project.json`
 Make sure Rojo maps to `src/` structure, not old root folders:
@@ -143,15 +157,17 @@ Once migration is verified, remove:
 - `ReplicatedStorage/`
 
 ### Step 6: Verify
-- Run `rojo build -o test.rbxlx` to confirm Rojo can build
+- On Pulsar0100: run `rojo build -o test.rbxlx` to confirm Rojo can build
 - Run `selene src/` if available
-- Commit with message: `refactor: migrate to src/ Knit architecture`
+- Commit from Pi RAID path with message: `refactor: migrate to src/ Knit architecture`
+
+---
 
 ## RULES
 - Read `CLAUDE.md` FIRST for all coding standards
-- Read `docs/gdd_master.md` for game design context
-- Read `docs/halo_economy.md` for all currency numbers
-- Read `docs/wing_progression.md` for wing tier specs
+- Read `assets/gdd_master.md` for game design context
+- Read `assets/halo_economy.md` for all currency numbers
+- Read `assets/wing_progression.md` for wing tier specs
 - Use Knit framework pattern for ALL services and controllers
 - Type annotations on EVERY function signature
 - Never trust client — validate everything server-side
@@ -160,12 +176,12 @@ Once migration is verified, remove:
 
 ## REFERENCE DOCS IN REPO
 ```
-docs/gdd_master.md          ← Full game design
-docs/halo_economy.md         ← Currency balance numbers
-docs/wing_progression.md     ← Wing tier system
-docs/wellness_mechanics.md   ← Therapy → mechanic mapping
-docs/easter_eggs_tracker.md  ← Hidden content specs
-docs/safety_compliance.md    ← COPPA requirements
-docs/launch_roadmap.md       ← Phase plan
-docs/luau_style_guide.md     ← Code standards
+assets/gdd_master.md          ← Full game design
+assets/halo_economy.md        ← Currency balance numbers
+assets/wing_progression.md    ← Wing tier system
+assets/wellness_mechanics.md  ← Therapy → mechanic mapping
+assets/easter_eggs_tracker.md ← Hidden content specs
+assets/safety_compliance.md   ← COPPA requirements
+assets/launch_roadmap.md      ← Phase plan
+assets/luau_style_guide.md    ← Code standards
 ```
