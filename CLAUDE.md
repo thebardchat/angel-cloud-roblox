@@ -476,3 +476,8 @@ When Claude Code needs design context, read these files in `assets/`:
 ## Next Step
 
 **Phase 1, Task 1:** Scaffold the full file structure. Create every file listed above with starter boilerplate. Get `rojo serve` running. This is the foundation everything else builds on.
+
+## Claude Code Rules
+- Commit and push directly to `main`. Do NOT create branches.
+- Run build/test commands before committing.
+- Update CLAUDE.md session log before final commit.
